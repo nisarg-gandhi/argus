@@ -1,0 +1,9 @@
+id,reg_no,owner_name,make,model,colour,chassis_no
+VEH-001,UP14CQ5566,Rakesh Kumar Yadav,Maruti Suzuki,Swift,White,MA3EYD81S00123456
+VEH-002,UP32AZ1234,Bhola Prasad,Hero,Splendor Plus,Black,MBLHA10A3CHG12345
+VEH-003,UP32BX4567,Suresh Verma,Bajaj,Pulsar 150,Blue,MD2A11BZ5HCG67890
+VEH-004,UP32CY7890,Amit Sharma,Honda,Activa 6G,Grey,ME4JC651NN8012345
+VEH-005,UP32DZ0011,Ramesh Tiwari,Toyota,Innova Crysta,Silver,MHFYX59G9K2012345
+VEH-006,UP32EA1122,Deepak Srivastava,Hyundai,i20,Red,MALAN51CLGM012345
+VEH-007,UP32FB2233,Mohan Lal Gupta,Tata,Nexon,Teal,MAT610634K1012345
+VEH-008,UP32GC3344,Vinod Mishra,Maruti Suzuki,Wagon R,White,MA3EWDE1S00234567

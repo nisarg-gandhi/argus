@@ -1,0 +1,13 @@
+id,fir_id,name,role,address,phone,notes
+P-001,FIR-GNR-001,Rakesh Kumar Yadav,ACCUSED,"Sector 12, Indira Nagar, Lucknow",9812345678,Arrived in vehicle UP14CQ5566
+P-002,FIR-HRG-001,R.K. Yadav,ACCUSED,"Indira Nagar, Lucknow (approx)",9812345678,Vehicle UP14CQ5566 noted by SHO
+P-003,FIR-ALB-001,Rakesh s/o Mahesh Yadav,ACCUSED,Unknown — gave mobile only,9812345678,Vehicle UP14CQ5566; alias Rocky; transferred to acct 500112233445
+P-004,FIR-GNR-002,Sunita Devi,WITNESS,"34 Viram Khand, Gomtinagar",9001122334,Witness to theft; W/o Harish Kumar
+P-005,FIR-HRG-002,Sunita Devi,VICTIM,"Hazratganj area, Lucknow",9321456780,D/o Rampal Singh; molestation complaint
+P-006,FIR-GNR-003,Priya Verma,VICTIM,"Sarojini Nagar, Lucknow",8877665544,Assault; W/o Anand Verma; property dispute
+P-007,FIR-GNR-004,Ajay Pandey,VICTIM,"Sector-9, Gomtinagar",9123456789,Stabbing victim
+P-008,FIR-GNR-004,Vinod Mishra,WITNESS,"Sector-9 market, Lucknow",7001234567,Eyewitness to stabbing
+P-009,FIR-HRG-004,Bhola Prasad,ACCUSED,Unknown,9456789012,Alias Bholu; stolen phone pawn shop recovery
+P-010,FIR-ALB-003,Suresh,ACCUSED,"Alambagh, Lucknow",9870011223,Alias Sonu; ringleader of unlawful assembly
+P-011,FIR-ALB-004,Amit Sharma,ACCUSED,Near Alambagh Railway Station,9900112233,NDPS arrest; supplier network under probe
+P-012,FIR-GNR-001,Ramesh Tiwari,VICTIM,"Vikas Nagar, Lucknow",9876543210,Complainant; cheated of Rs 2.4 lakh

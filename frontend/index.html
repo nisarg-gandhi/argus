@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Argus — SIH 2026 PS 26189</title>
+<meta name="description" content="Argus cross-case entity resolution and link-analysis dashboard for law enforcement." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://unpkg.com/vis-network@9.1.9/styles/vis-network.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+
+<style>
+/* ── Reset & tokens ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --accent:     #1A56DB;
+  --accent-lt:  #EEF2FF;
+  --accent-dk:  #1246BB;
+  --bg:         #F3F4F6;
+  --surface:    #FFFFFF;
+  --border:     #E5E7EB;
+  --text:       #111827;
+  --text-2:     #6B7280;
+  --text-3:     #9CA3AF;
+  --success:    #059669;
+  --danger:     #DC2626;
+  --warn:       #D97706;
+  --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:  0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+  --radius:     8px;
+  --font:       'Inter', system-ui, sans-serif;
+  --mono:       'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+#header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: sticky; top: 0; z-index: 100;
+}
+#header-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: center; gap: 24px;
+  padding: 0 24px;
+}
+#logo {
+  font-weight: 700; font-size: 20px; color: var(--accent);
+  letter-spacing: -.5px; padding: 14px 0;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 10px;
+}
+#argus-logo {
+  height: 28px;
+}
+
+/* ── Tab bar ─────────────────────────────────────────────────────── */
+#tabs {
+  display: flex; gap: 0; flex: 1;
+}
+.tab {
+  padding: 16px 20px;
+  font-size: 14px; font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer; border: none; background: none;
+  border-bottom: 3px solid transparent;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 7px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-badge {
+  background: var(--accent); color: #fff;
+  border-radius: 10px; padding: 1px 7px;
+  font-size: 11px; font-weight: 600;
+  display: none;
+}
+.tab-badge.visible { display: inline; }
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+#main {
+  max-width: 1400px; margin: 0 auto;
+  padding: 32px 24px;
+}
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.card-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--text); margin-bottom: 20px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 6px;
+  font-family: var(--font); font-size: 14px; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent;
+  transition: background .15s, box-shadow .15s, transform .1s;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent-dk); }
+.btn-primary:hover { background: var(--accent-dk); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger  { background: #FEF2F2; color: var(--danger); border-color: #FECACA; }
+.btn-danger:hover { background: #FEE2E2; }
+.btn-success { background: #F0FDF4; color: var(--success); border-color: #BBF7D0; }
+.btn-success:hover { background: #DCFCE7; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ── Input / Search ──────────────────────────────────────────────── */
+.search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.search-input {
+  flex: 1; padding: 9px 14px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: var(--font); font-size: 14px; color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s, box-shadow .15s;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+}
+
+/* ── Processing checklist ────────────────────────────────────────── */
+.checklist { list-style: none; }
+.check-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px; font-weight: 500;
+  color: var(--text-3);
+  transition: color .3s;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item.done { color: var(--success); }
+.check-item.active { color: var(--accent); }
+.check-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+  transition: all .3s;
+}
+.check-item.done  .check-icon { background: var(--success); border-color: var(--success); color: #fff; }
+.check-item.active .check-icon { border-color: var(--accent); animation: pulse-ring .8s ease infinite; }
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(26,86,219,.3); }
+  70%  { box-shadow: 0 0 0 8px rgba(26,86,219,0); }
+  100% { box-shadow: 0 0 0 0 rgba(26,86,219,0); }
+}
+.check-sub { font-size: 12px; font-weight: 400; color: var(--text-3); margin-top: 1px; }
+
+/* ── Graph section ───────────────────────────────────────────────── */
+#graph-wrap { display: flex; gap: 16px; height: 580px; }
+#graph-container {
+  flex: 1;
+  border: none; border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
+  background: var(--surface); overflow: hidden;
+  position: relative;
+}
+#side-panel {
+  width: 300px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 12px;
+}
+#node-detail {
+  background: var(--surface);
+  border: none; border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
+  padding: 24px; flex: 1; overflow-y: auto;
+}
+#node-detail h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.detail-row { display: flex; flex-direction: column; margin-bottom: 12px; }
+.detail-label { font-size: 12px; font-weight: 500; color: var(--text-3); margin-bottom: 2px; }
+.detail-value { font-size: 14px; font-weight: 400; word-break: break-all; }
+
+#graph-legend {
+  position: absolute; bottom: 20px; left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  padding: 12px 16px; z-index: 10;
+  backdrop-filter: blur(4px);
+  min-width: 140px;
+}
+#graph-legend summary {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  cursor: pointer; list-style: none; user-select: none;
+}
+#graph-legend summary::-webkit-details-marker { display: none; }
+.legend-content { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text-2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+#graph-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+#graph-status { font-size: 13px; color: var(--text-2); padding: 12px 0; }
+
+/* ── Alerts ──────────────────────────────────────────────────────── */
+.alert-card {
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; margin-bottom: 12px;
+  transition: box-shadow .15s;
+}
+.alert-card:hover { box-shadow: var(--shadow-md); }
+.alert-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.alert-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 4px; text-transform: uppercase; letter-spacing: .4px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.badge-serial { background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; }
+.badge-shared { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.alert-rule { font-size: 13px; font-weight: 600; color: var(--text); }
+.alert-detail { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.conf-bar {
+  height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 14px;
+}
+.conf-fill { height: 100%; border-radius: 2px; background: var(--accent);
+             transition: width .4s ease; }
+.alert-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.alert-entities { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.entity-chip {
+  font-size: 11px; font-family: var(--mono);
+  padding: 2px 8px; border-radius: 4px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text-2);
+}
+.verdict-btn { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;
+               cursor: pointer; border: 1px solid; transition: all .15s; }
+.v-tp { background: #F0FDF4; color: #15803D; border-color: #86EFAC; }
+.v-tp:hover, .v-tp.active { background: #15803D; color: #fff; }
+.v-fp { background: #FEF2F2; color: #B91C1C; border-color: #FCA5A5; }
+.v-fp:hover, .v-fp.active { background: #B91C1C; color: #fff; }
+.v-tn { background: #F5F3FF; color: #6D28D9; border-color: #C4B5FD; }
+.v-tn:hover, .v-tn.active { background: #6D28D9; color: #fff; }
+.v-fn { background: #FFFBEB; color: #B45309; border-color: #FCD34D; }
+.v-fn:hover, .v-fn.active { background: #B45309; color: #fff; }
+.conf-label { font-size: 12px; color: var(--text-2); margin-left: auto; }
+
+/* ── Ledger ──────────────────────────────────────────────────────── */
+.ledger-actions { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+#verify-result {
+  padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
+  display: none;
+}
+.verify-ok  { background: #F0FDF4; color: var(--success); border: 1px solid #BBF7D0; }
+.verify-bad { background: #FEF2F2; color: var(--danger);  border: 1px solid #FECACA; }
+
+.ledger-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ledger-table th {
+  text-align: left; padding: 8px 12px;
+  border-bottom: 2px solid var(--border);
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text-2);
+}
+.ledger-table td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.ledger-table tr.tampered { background: #FEF2F2; }
+.ledger-table tr:last-child td { border-bottom: none; }
+.hash-cell {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-2); word-break: break-all;
+}
+.action-pill {
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 4px; background: var(--accent-lt);
+  color: var(--accent); display: inline-block;
+}
+
+/* ── Search results ──────────────────────────────────────────────── */
+.result-list { list-style: none; }
+.result-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .1s;
+}
+.result-item:hover { background: var(--bg); margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+.result-item:last-child { border-bottom: none; }
+.result-type {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px; flex-shrink: 0;
+}
+.rt-person   { background: #EFF6FF; color: #1D4ED8; }
+.rt-vehicle  { background: #F5F3FF; color: #7C3AED; }
+.rt-account  { background: #F0FDF4; color: #15803D; }
+.rt-phone    { background: #FFF7ED; color: #C2410C; }
+.result-label { font-size: 14px; font-weight: 500; }
+.result-sub   { font-size: 12px; color: var(--text-2); }
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--text); color: #fff;
+  padding: 12px 20px; border-radius: 8px;
+  font-size: 14px; box-shadow: var(--shadow-md);
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; }
+
+/* ── Spinner ─────────────────────────────────────────────────────── */
+.spin {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-3); font-size: 14px;
+}
+.empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #graph-wrap { flex-direction: column; height: auto; }
+  #graph-container { height: 400px; }
+  #side-panel { width: 100%; height: auto; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────── -->
+<div id="header">
+  <div id="header-inner">
+    <div id="logo">
+      <img src="raw_logo.ico" id="argus-logo" alt="A" onerror="this.style.display='none'">
+      Argus
+    </div>
+    <nav id="tabs" role="tablist">
+      <button class="tab active" data-tab="input"      role="tab">Input</button>
+      <button class="tab"        data-tab="processing" role="tab">Processing</button>
+      <button class="tab"        data-tab="graph"      role="tab">Graph</button>
+      <button class="tab"        data-tab="alerts"     role="tab">
+        Alerts
+        <span class="tab-badge" id="alert-badge">0</span>
+      </button>
+      <button class="tab"        data-tab="ledger"     role="tab">Ledger</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ── Main ────────────────────────────────────────────────────── -->
+<div id="main">
+
+  <!-- ①  INPUT ─────────────────────────────────────────────────── -->
+  <section class="section active" id="sec-input">
+    <div class="card">
+      <div class="card-title">Ingest Data</div>
+      <p style="color:var(--text-2);font-size:14px;margin-bottom:18px;">
+        Upload CSV files or a ZIP archive containing your raw intelligence data (FIRs, CDRs, Bank Transactions, Vehicles).
+      </p>
+      
+      <!-- Drag and drop zone -->
+      <div id="drop-zone" style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; margin-bottom: 16px; background: #fafafa; transition: background 0.2s, border-color 0.2s;" 
+           onclick="document.getElementById('file-upload').click()" 
+           ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-lt)'" 
+           ondragleave="this.style.borderColor='var(--border)'; this.style.background='#fafafa'" 
+           ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='#fafafa'; handleFileUpload(event.dataTransfer.files)">
+        <div style="font-size: 32px; margin-bottom: 12px;">📁</div>
+        <div style="font-size: 15px; font-weight: 500; color: var(--text);">Click to browse or drag and drop files here</div>
+        <div style="font-size: 13px; color: var(--text-2); margin-top: 4px;">Supports .csv and .zip</div>
+        <input type="file" id="file-upload" multiple accept=".csv,.zip" style="display: none;" onchange="handleFileUpload(this.files)" />
+      </div>
+
+      <div id="upload-status" style="font-size:13px;color:var(--text-2);margin-bottom:16px;"></div>
+
+      <button class="btn btn-primary" id="btn-run" onclick="runAnalysis()" style="display: none;">
+        ▶ Run Analysis
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Search Entities</div>
+      <div class="search-row">
+        <input class="search-input" id="search-input" type="text"
+               placeholder="Search name, phone, vehicle reg, account…"
+               oninput="debounceSearch(this.value)" />
+      </div>
+      <ul class="result-list" id="search-results">
+        <li class="empty"><div class="empty-icon">🔍</div>Start typing to search</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ②  PROCESSING ───────────────────────────────────────────── -->
+  <section class="section" id="sec-processing">
+    <div class="card">
+      <div class="card-title">Pipeline Progress</div>
+      <ul class="checklist" id="checklist">
+        <li class="check-item" id="step-ingest">
+          <div class="check-icon">1</div>
+          <div>
+            <div>Ingesting FIR narratives</div>
+            <div class="check-sub">Loading 12 FIR records from argus.db</div>
+          </div>
+        </li>
+        <li class="check-item" id="step-extract">
+          <div class="check-icon">2</div>
+          <div>
+            <div>Extracting entities</div>
+            <div class="check-sub">spaCy NER + regex (phones, vehicles, accounts)</div>
+          </div>
+        </li>
+        <li class="check-item" id="step-resolve">
+          <div class="check-icon">3</div>
+          <div>
+            <div>Resolving identities</div>
+            <div class="check-sub">Cross-FIR deduplication via score_pair() gate</div>
+          </div>
+        </li>
+        <li class="check-item" id="step-graph">
+          <div class="check-icon">4</div>
+          <div>
+            <div>Building knowledge graph</div>
+            <div class="check-sub">NetworkX: Person / Phone / Vehicle / Account nodes</div>
+          </div>
+        </li>
+        <li class="check-item" id="step-done">
+          <div class="check-icon">✓</div>
+          <div>
+            <div>Analysis complete</div>
+            <div class="check-sub" id="step-done-sub">—</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div style="text-align:center;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="switchTab('graph')" id="btn-goto-graph" disabled>
+        → View Graph
+      </button>
+    </div>
+  </section>
+
+  <!-- ③  GRAPH ────────────────────────────────────────────────── -->
+  <section class="section" id="sec-graph">
+    <div id="graph-controls">
+      <button class="btn btn-secondary btn-sm" onclick="loadGraph('P-001')">Yadav cluster</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadGraph('PH:9988001122')">Shared phone</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetGraph()">Full graph</button>
+      <span id="graph-status"></span>
+    </div>
+
+    <div id="graph-wrap">
+      <div id="graph-container">
+        <details id="graph-legend">
+          <summary>Legend</summary>
+          <div class="legend-content">
+            <div class="legend-item"><div class="legend-dot" style="background:#DBEAFE; border:1px solid #93C5FD"></div>Person</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#FFEDD5; border:1px solid #FDBA74"></div>📞 Phone</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#DCFCE7; border:1px solid #86EFAC"></div>💳 Account</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#F3E8FF; border:1px solid #D8B4FE"></div>🚗 Vehicle</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#CCFBF1; border:1px solid #5EEAD4"></div>Location</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#FEF9C3; border:1px solid #FDE047"></div>FIR</div>
+            <div style="margin-top:6px;font-size:11px;color:var(--text-3);">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid #FCA5A5"></span> Alert Flag
+            </div>
+          </div>
+        </details>
+      </div>
+      <div id="side-panel">
+        <div id="node-detail">
+          <h3>Node Details</h3>
+          <p style="color:var(--text-3);font-size:13px;">Click any node to see details.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④  ALERTS ───────────────────────────────────────────────── -->
+  <section class="section" id="sec-alerts">
+    <div id="alerts-list">
+      <div class="empty"><div class="empty-icon">🔔</div>Run the pipeline first (① Input tab)</div>
+    </div>
+  </section>
+
+  <!-- ⑤  LEDGER ───────────────────────────────────────────────── -->
+  <section class="section" id="sec-ledger">
+    <div class="card">
+      <div class="ledger-actions">
+        <button class="btn btn-secondary" onclick="loadLedger()">↻ Refresh</button>
+        <button class="btn btn-success"   onclick="verifyChain()">🔒 Verify Chain</button>
+        <button class="btn btn-danger"    onclick="tamperAndVerify()" id="btn-tamper">⚠ Demo Tamper</button>
+        <div id="verify-result"></div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="ledger-table" id="ledger-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Timestamp</th>
+              <th>Actor</th>
+              <th>Action</th>
+              <th>row_hash</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body">
+            <tr><td colspan="5" class="empty">Load ledger to view entries</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /#main -->
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CONSTANTS & STATE
+══════════════════════════════════════════════════════════════════ */
+const API = 'http://localhost:8000';
+let network = null;
+let graphData = { nodes: [], edges: [] };
+let currentAlertId = null;
+
+/* ══════════════════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════════════════ */
+function toast(msg, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: r.statusText }));
+    throw new Error(err.detail || r.statusText);
+  }
+  return r.json();
+}
+
+let _searchTimer = null;
+function debounceSearch(v) {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => doSearch(v), 280);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === `sec-${name}`));
+  if (name === 'ledger') loadLedger();
+  if (name === 'alerts') loadAlerts();
+}
+
+document.querySelectorAll('.tab').forEach(t =>
+  t.addEventListener('click', () => switchTab(t.dataset.tab))
+);
+
+/* ══════════════════════════════════════════════════════════════════
+   ①  INPUT — Load Demo + Search
+══════════════════════════════════════════════════════════════════ */
+async function handleFileUpload(fileList) {
+  if (!fileList || fileList.length === 0) return;
+  const status = document.getElementById('upload-status');
+  const btnRun = document.getElementById('btn-run');
+  
+  status.innerHTML = '<span class="spin"></span> Uploading and ingesting data...';
+  btnRun.style.display = 'none';
+
+  const formData = new FormData();
+  for (let i = 0; i < fileList.length; i++) {
+    formData.append('files', fileList[i]);
+  }
+
+  try {
+    const res = await fetch(API + '/ingest', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    
+    let summaryHtml = '<div style="background:var(--success); color:#fff; padding: 6px 12px; border-radius:4px; display:inline-block; margin-bottom:8px;">✓ Upload Successful</div><br/>';
+    summaryHtml += `<b>Ingested Rows:</b><br/>`;
+    for (const [table, count] of Object.entries(data.summary)) {
+      if (count > 0) summaryHtml += `• ${table}: ${count}<br/>`;
+    }
+    status.innerHTML = summaryHtml;
+    btnRun.style.display = 'inline-flex';
+    toast('Data ingested successfully');
+  } catch(e) {
+    status.innerHTML = `<span style="color:var(--danger)">Error: ${escHtml(e.message)}</span>`;
+    toast('Upload failed', 4000);
+  }
+}
+
+async function runAnalysis() {
+  const btn = document.getElementById('btn-run');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Running...';
+
+  switchTab('processing');
+  await animateChecklist();
+
+  btn.disabled = false;
+  btn.innerHTML = '▶ Run Analysis';
+}
+
+async function animateChecklist() {
+  const steps = ['ingest','extract','resolve','graph','done'];
+  const delays = [400, 600, 800, 600, 400];
+
+  function setStep(id, state) {
+    const el = document.getElementById(`step-${id}`);
+    el.classList.remove('done','active');
+    if (state) el.classList.add(state);
+  }
+
+  // Reset all
+  steps.forEach(s => setStep(s, ''));
+  document.getElementById('btn-goto-graph').disabled = true;
+
+  try {
+    // Step 1: ingest (local, instant)
+    setStep('ingest', 'active');
+    await sleep(delays[0]);
+    setStep('ingest', 'done');
+
+    // Step 2: extract
+    setStep('extract', 'active');
+    await sleep(delays[1]);
+
+    // Step 3: resolve — fire the API call here
+    setStep('extract', 'done');
+    setStep('resolve', 'active');
+
+    const result = await api('/process', { method: 'POST', body: '{}' });
+
+    setStep('resolve', 'done');
+    await sleep(delays[2]);
+
+    // Step 4: graph build
+    setStep('graph', 'active');
+    await sleep(delays[3]);
+    setStep('graph', 'done');
+
+    // Step 5: done
+    setStep('done', 'active');
+    await sleep(delays[4]);
+    setStep('done', 'done');
+
+    document.getElementById('step-done-sub').textContent =
+      `${result.extracted_firs} FIRs · ${result.resolution.accepted} merges · ${result.alerts_generated} alerts`;
+
+    document.getElementById('btn-goto-graph').disabled = false;
+
+    // Update alert badge
+    const badge = document.getElementById('alert-badge');
+    badge.textContent = result.alerts_generated;
+    badge.classList.toggle('visible', result.alerts_generated > 0);
+
+    toast(`Pipeline complete — ${result.alerts_generated} alerts generated`);
+
+    // Pre-load graph
+    await loadGraph('P-001');
+
+  } catch(e) {
+    toast('Error: ' + e.message, 4000);
+    steps.forEach(s => setStep(s, ''));
+    throw e;
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function doSearch(q) {
+  const ul = document.getElementById('search-results');
+  if (!q.trim()) {
+    ul.innerHTML = '<li class="empty"><div class="empty-icon">🔍</div>Start typing to search</li>';
+    return;
+  }
+  try {
+    const data = await api(`/entities?q=${encodeURIComponent(q)}`);
+    if (!data.results.length) {
+      ul.innerHTML = '<li class="empty"><div class="empty-icon">🤷</div>No results</li>';
+      return;
+    }
+    ul.innerHTML = data.results.map(r => {
+      const typeClass = { Person:'rt-person', Vehicle:'rt-vehicle', Account:'rt-account', Phone:'rt-phone' }[r.type] || 'rt-person';
+      const sub = [r.phone, r.address, r.owner, r.holder, r.fir_id].filter(Boolean).join(' · ');
+      return `<li class="result-item" onclick="viewEntity('${escHtml(r.id)}')">
+        <span class="result-type ${typeClass}">${r.type}</span>
+        <div>
+          <div class="result-label">${escHtml(r.label)}</div>
+          ${sub ? `<div class="result-sub">${escHtml(sub)}</div>` : ''}
+        </div>
+      </li>`;
+    }).join('');
+  } catch(e) {
+    ul.innerHTML = `<li class="empty">Error: ${escHtml(e.message)}</li>`;
+  }
+}
+
+function viewEntity(id) {
+  switchTab('graph');
+  loadGraph(id);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ③  GRAPH
+══════════════════════════════════════════════════════════════════ */
+async function loadGraph(masterId = 'P-001', hops = 2) {
+  const status = document.getElementById('graph-status');
+  status.innerHTML = '<span class="spin"></span> Loading…';
+  try {
+    const data = await api(`/graph/${encodeURIComponent(masterId)}?hops=${hops}`);
+
+    // Filter out orphan OWNER: nodes added by graphstore
+    const nodes = data.nodes.filter(n => !n.id.startsWith('OWNER:'));
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const edges = data.edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to));
+
+    // Deduplicate parallel CDR edges (show only first per src-dst pair for clarity)
+    const edgeSeen = new Set();
+    const dedupEdges = edges.filter(e => {
+      const key = `${e.from}→${e.to}→${e.label}`;
+      if (edgeSeen.has(key) && e.label === 'CALLED') return false;
+      edgeSeen.add(key);
+      return true;
+    });
+
+    // Enhance node visuals
+    const visNodes = nodes.map(n => {
+      const isSummary = n.group === 'Summary';
+      const labelPrefix = (n.group === 'Phone' ? '📞 ' : (n.group === 'Vehicle' ? '🚗 ' : (n.group === 'Account' ? '💳 ' : '')));
+      
+      const nodeProps = {
+        ...n,
+        label: (isSummary ? '' : labelPrefix) + (n.label || n.id),
+        shape: isSummary ? 'ellipse' : 'dot',
+        size: isSummary ? 14 : (n.group === 'Person' ? 18 : 14),
+        font: { size: 11, face: 'Inter, sans-serif', color: isSummary ? '#6B7280' : '#374151', strokeWidth: 2, strokeColor: '#ffffff' },
+        borderWidth: n.alert ? 2 : 1,
+        color: {
+          background: isSummary ? '#F3F4F6' : (n.color?.background || '#F3F4F6'),
+          border: n.alert ? '#FCA5A5' : (isSummary ? '#D1D5DB' : (n.color?.border || '#D1D5DB')),
+          highlight: { 
+            border: n.alert ? '#EF4444' : '#6B7280', 
+            background: isSummary ? '#E5E7EB' : (n.color?.background || '#E5E7EB')
+          }
+        },
+        shadow: { enabled: true, size: 4, x: 2, y: 2, color: 'rgba(0,0,0,.04)' },
+      };
+      
+      if (isSummary) {
+        nodeProps.shapeProperties = { borderDashes: [4, 4] };
+      } else if (n.shapeProperties) {
+        nodeProps.shapeProperties = n.shapeProperties;
+      }
+      
+      return nodeProps;
+    });
+
+    const visEdges = dedupEdges.map(e => ({
+      ...e,
+      fullLabel: e.label,
+      label: '',
+      width: e.label === 'SAME_AS' ? 3 : 1.5,
+      dashes: e.label === 'SAME_AS',
+      font: { size: 10, face: 'Inter', color: '#6B7280', strokeWidth: 0 },
+      smooth: { type: 'continuous' },
+    }));
+
+    graphData = { nodes: new vis.DataSet(visNodes), edges: new vis.DataSet(visEdges) };
+
+    if (!network) {
+      network = new vis.Network(
+        document.getElementById('graph-container'),
+        graphData,
+        visOptions()
+      );
+      network.on('click', onNodeClick);
+      
+      // Edge label fade in on hover/selection
+      network.on('hoverEdge', function(e) {
+        const edge = graphData.edges.get(e.edge);
+        if (edge && edge.fullLabel) graphData.edges.update({ id: e.edge, label: edge.fullLabel });
+      });
+      network.on('blurEdge', function(e) {
+        if (!network.getSelection().edges.includes(e.edge)) {
+          graphData.edges.update({ id: e.edge, label: '' });
+        }
+      });
+      network.on('selectEdge', function(e) {
+        e.edges.forEach(id => {
+          const edge = graphData.edges.get(id);
+          if (edge && edge.fullLabel) graphData.edges.update({ id, label: edge.fullLabel });
+        });
+      });
+      network.on('deselectEdge', function(e) {
+        e.previousSelection.edges.forEach(id => graphData.edges.update({ id, label: '' }));
+      });
+    } else {
+      network.setData(graphData);
+    }
+
+    status.textContent = `${nodes.length} nodes · ${visEdges.length} edges · hops=${hops}`;
+
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    toast('Graph error: ' + e.message, 4000);
+  }
+}
+
+function resetGraph() { loadGraph('P-001'); }
+
+function nodeShape(type) {
+  return 'dot';
+}
+
+function visOptions() {
+  return {
+    physics: {
+      enabled: true,
+      barnesHut: { gravitationalConstant: -4000, springLength: 120, springConstant: 0.04 },
+      stabilization: { iterations: 120 },
+    },
+    interaction: { hover: true, tooltipDelay: 150, navigationButtons: true, hoverConnectedEdges: false },
+    nodes: { borderWidthSelected: 3 },
+    edges: { selectionWidth: 2.5 },
+    layout: { improvedLayout: true },
+  };
+}
+
+function onNodeClick(params) {
+  if (!params.nodes.length) return;
+  const nodeId  = params.nodes[0];
+  const nodeData = graphData.nodes.get(nodeId);
+  if (!nodeData) return;
+
+  if (nodeData.group === 'Summary') {
+    const children = nodeData.children || [];
+    
+    // Remove summary node (vis.js auto-removes attached edges)
+    graphData.nodes.remove(nodeId);
+    
+    const newNodes = [];
+    const newEdges = [];
+    
+    for (const child of children) {
+      const labelPrefix = (child.node.type === 'Phone' || child.node.group === 'Phone' ? '📞 ' : (child.node.type === 'Vehicle' || child.node.group === 'Vehicle' ? '🚗 ' : (child.node.type === 'Account' || child.node.group === 'Account' ? '💳 ' : '')));
+      newNodes.push({
+        ...child.node,
+        id: child.node.id,
+        group: child.node.type || child.node.group,
+        label: labelPrefix + (child.node.label || child.node.id),
+        shape: 'dot',
+        size: 14,
+        font: { size: 11, face: 'Inter, sans-serif', color: '#374151', strokeWidth: 2, strokeColor: '#ffffff' },
+        borderWidth: child.node.alert ? 2 : 1,
+        color: {
+          background: child.node.color?.background || '#F3F4F6',
+          border: child.node.alert ? '#FCA5A5' : (child.node.color?.border || '#D1D5DB'),
+          highlight: { 
+            border: child.node.alert ? '#EF4444' : '#6B7280', 
+            background: child.node.color?.background || '#E5E7EB'
+          }
+        },
+        shadow: { enabled: true, size: 4, x: 2, y: 2, color: 'rgba(0,0,0,.04)' }
+      });
+      newEdges.push({
+        ...child.edge,
+        id: child.edge.id || `expanded-${child.edge.from}-${child.edge.to}-${Date.now()}`,
+        fullLabel: child.edge.label,
+        label: '',
+        width: 1.5,
+        font: { size: 10, face: 'Inter', color: '#6B7280', strokeWidth: 0 },
+        smooth: { type: 'continuous' }
+      });
+    }
+    
+    graphData.nodes.add(newNodes);
+    graphData.edges.add(newEdges);
+    
+    return;
+  }
+
+  const panel = document.getElementById('node-detail');
+  const rows = [
+    ['ID',    nodeId],
+    ['Type',  nodeData.group || '—'],
+    ['Label', nodeData.label || '—'],
+    ...(nodeData.title
+      ? nodeData.title
+          .replace(/<[^>]+>/g, '\n')
+          .split('\n')
+          .filter(l => l.includes(':'))
+          .map(l => { const [k,...v] = l.split(':'); return [k.trim(), v.join(':').trim()]; })
+      : []),
+  ];
+
+  panel.innerHTML = `
+    <h3>${escHtml(nodeData.label || nodeId)}</h3>
+    ${rows.map(([k,v]) => `
+      <div class="detail-row">
+        <div class="detail-label">${escHtml(k)}</div>
+        <div class="detail-value">${escHtml(v)}</div>
+      </div>
+    `).join('')}
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+    <button class="btn btn-secondary btn-sm" onclick="loadGraph('${escHtml(nodeId)}')">
+      🔍 Expand subgraph
+    </button>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ④  ALERTS
+══════════════════════════════════════════════════════════════════ */
+async function loadAlerts() {
+  const container = document.getElementById('alerts-list');
+  container.innerHTML = '<div class="empty"><span class="spin"></span> Loading…</div>';
+  try {
+    const data = await api('/alerts');
+    if (!data.alerts.length) {
+      container.innerHTML = '<div class="empty"><div class="empty-icon">🔔</div>No alerts yet — run the pipeline first</div>';
+      return;
+    }
+
+    // Update badge
+    const badge = document.getElementById('alert-badge');
+    badge.textContent = data.count;
+    badge.classList.toggle('visible', data.count > 0);
+
+    container.innerHTML = data.alerts.map(a => {
+      const badgeClass = a.rule === 'SERIAL_OFFENDER_LINK' ? 'badge-serial' : 'badge-shared';
+      const conf = Math.round(a.confidence * 100);
+      return `<div class="alert-card" id="alert-${a.id}">
+        <div class="alert-header">
+          <span class="alert-badge ${badgeClass}">${a.rule.replace('_',' ')}</span>
+          <div>
+            <div class="alert-rule">${escHtml(a.rule)}</div>
+            <div class="alert-detail">${escHtml(a.rule === 'SERIAL_OFFENDER_LINK'
+              ? 'Cross-station activity detected'
+              : 'Shared device across multiple accounts')}</div>
+          </div>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
+        <div class="alert-entities">
+          ${a.entities.map(e => `<span class="entity-chip">${escHtml(e)}</span>`).join('')}
+        </div>
+        <div class="alert-actions">
+          <button class="btn btn-secondary btn-sm" onclick="focusAlertGraph(${a.id}, ${JSON.stringify(a.entities)})">
+            🔗 View in Graph
+          </button>
+          <span class="verdict-btn v-tp" onclick="sendFeedback(${a.id},'tp',this)">TP</span>
+          <span class="verdict-btn v-fp" onclick="sendFeedback(${a.id},'fp',this)">FP</span>
+          <span class="verdict-btn v-tn" onclick="sendFeedback(${a.id},'tn',this)">TN</span>
+          <span class="verdict-btn v-fn" onclick="sendFeedback(${a.id},'fn',this)">FN</span>
+          <a href="${API}/export/${a.id}" target="_blank" class="btn btn-secondary btn-sm">⬇ Export</a>
+          <span class="conf-label">${conf}% confidence</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    container.innerHTML = `<div class="empty">Error: ${escHtml(e.message)}</div>`;
+  }
+}
+
+async function sendFeedback(alertId, verdict, btn) {
+  // Highlight the selected verdict
+  btn.closest('.alert-actions').querySelectorAll('.verdict-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  try {
+    await api(`/alert/${alertId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify({ verdict, actor: 'analyst' }),
+    });
+    toast(`Feedback recorded: ${verdict.toUpperCase()}`);
+  } catch(e) {
+    toast('Feedback error: ' + e.message, 4000);
+  }
+}
+
+function focusAlertGraph(alertId, entities) {
+  // Find first Person or Phone node in entities
+  const target = entities.find(e => e.startsWith('P-')) ||
+                 entities.find(e => e.startsWith('PH:')) ||
+                 entities[0];
+  switchTab('graph');
+  loadGraph(target);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ⑤  LEDGER
+══════════════════════════════════════════════════════════════════ */
+async function loadLedger() {
+  const tbody = document.getElementById('ledger-body');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spin"></span> Loading…</td></tr>';
+  try {
+    const data = await api('/ledger?limit=50');
+    if (!data.entries.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">No entries yet — run the pipeline</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.entries.map(e => `
+      <tr>
+        <td><strong>${e.id}</strong></td>
+        <td style="font-size:12px;color:var(--text-2)">${e.ts.replace('T',' ').slice(0,19)}</td>
+        <td>${escHtml(e.actor)}</td>
+        <td><span class="action-pill">${escHtml(e.action)}</span></td>
+        <td class="hash-cell">${escHtml((e.row_hash||'').slice(0,24))}…</td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function verifyChain() {
+  const el = document.getElementById('verify-result');
+  el.style.display = 'none';
+  try {
+    const data = await api('/ledger/verify');
+    el.style.display = 'block';
+    if (data.intact) {
+      el.className = 'verify-ok';
+      el.textContent = '✓ Chain intact — no tampering detected';
+    } else {
+      el.className = 'verify-bad';
+      el.textContent = `✗ Chain broken at row ${data.first_broken_index} — tampering detected!`;
+    }
+  } catch(e) {
+    el.style.display = 'block';
+    el.className = 'verify-bad';
+    el.textContent = 'Verify error: ' + e.message;
+  }
+}
+
+async function tamperAndVerify() {
+  const btn = document.getElementById('btn-tamper');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Tampering…';
+  try {
+    // Fetch first ledger row id
+    const ledger = await api('/ledger?limit=100');
+    const entries = ledger.entries || [];
+    if (!entries.length) { toast('No ledger entries to tamper'); return; }
+    const firstId = Math.min(...entries.map(e => e.id));
+
+    await api('/demo/tamper', {
+      method: 'POST',
+      body: JSON.stringify({ row_id: firstId }),
+    });
+    toast(`Row ${firstId} corrupted — running verify…`, 2000);
+    await sleep(800);
+    await loadLedger();
+    await verifyChain();
+
+    // Highlight tampered rows
+    const tbody = document.getElementById('ledger-body');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(tr => {
+      const idCell = tr.querySelector('td:first-child');
+      if (idCell && parseInt(idCell.textContent) === firstId) {
+        tr.classList.add('tampered');
+      }
+    });
+
+  } catch(e) {
+    toast('Tamper error: ' + e.message, 4000);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⚠ Demo Tamper';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════ */
+function escHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
