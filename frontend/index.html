@@ -174,7 +174,23 @@ table.grid td { padding: 7px 10px; border-bottom: 1px solid var(--rule-2); verti
 #net-canvas { flex: 1; position: relative; min-height: 0; }
 #net-caption { position: absolute; left: 14px; top: 10px; z-index: 5; font-size: 13.5px; color: var(--ink-2); background: rgba(255,255,255,.9); padding: 4px 10px; border-radius: 4px; max-width: 70%; }
 #net-legend { border-top: 1px solid var(--rule); padding: 8px 14px; font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--ink-2); }
-#net-legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+#net-legend .sw, .lg .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+#net-legend { align-items: center; }
+.lg { border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 1px 10px 1px 8px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
+.lg:hover { border-color: var(--ink-3); }
+.lg.off { opacity: .45; text-decoration: line-through; }
+#net-tools { position: absolute; right: 12px; top: 10px; z-index: 6; display: flex; flex-direction: column; gap: 4px; }
+#net-tools button { width: 34px; height: 32px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 5px; font-weight: 700; font-size: 17px; line-height: 1; cursor: pointer; color: var(--ink); }
+#net-tools button:hover { border-color: var(--ink-3); }
+#net-tools button[data-z="fit"] { font-size: 12px; }
+#net-hint { position: absolute; right: 56px; top: 12px; z-index: 5; font-size: 12.5px; color: var(--ink-3); background: rgba(255,255,255,.9); padding: 3px 8px; border-radius: 4px; }
+.grp { display: grid; grid-template-columns: 14px 1fr; gap: 10px; padding: 8px 8px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+.grp + .grp { margin-top: 2px; }
+.grp:hover { background: var(--paper); }
+.grp.on { background: var(--carbon-lt); }
+.grp .sw { width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; }
+.grp .muted { font-size: 12.5px; }
+.path-form { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 8px; }
 #net-legend .ln { display: inline-block; width: 16px; height: 3px; margin-right: 6px; vertical-align: 3px; }
 #net-side { overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
 #net-side .panel { padding: 16px 18px; }
@@ -335,17 +351,23 @@ pre.cli .c { color: #8C95A8; }
             <button data-mode="focus">Focus</button>
           </div>
           <div class="seg hidden" id="er-toggle"><button data-res="false">Before resolution</button><button data-res="true" class="on">After resolution</button></div>
-          <div class="row" style="margin-left:auto;gap:8px">
-            <input class="field" id="path-a" list="people" placeholder="From person" style="width:170px">
-            <input class="field" id="path-b" list="people" placeholder="To person" style="width:170px">
-            <button class="btn small" id="btn-path">Find the link</button>
-            <datalist id="people"></datalist>
-          </div>
+          <input class="field" id="net-find" list="net-nodes" placeholder="Find someone or something in this view" style="margin-left:auto;width:290px">
+          <datalist id="net-nodes"></datalist>
         </div>
         <div id="net-wrap">
-          <div id="net"><div id="net-caption"></div><div id="net-canvas"></div><div id="net-legend"></div></div>
+          <div id="net">
+            <div id="net-caption"></div>
+            <div id="net-hint">Click a node to isolate its links. Double-click to focus.</div>
+            <div id="net-tools"><button data-z="in" title="Zoom in" aria-label="Zoom in">+</button><button data-z="out" title="Zoom out" aria-label="Zoom out">&minus;</button><button data-z="fit" title="Fit everything in view">Fit</button></div>
+            <div id="net-canvas"></div>
+            <div id="net-legend"></div>
+          </div>
           <div id="net-side">
-            <div class="panel" id="node-panel"><h3>Details</h3><p class="muted" style="font-size:14px">Click any node. Double-click a person to focus on them.</p></div>
+            <div class="panel" id="node-panel"><h3>Details</h3><p class="muted" style="font-size:14px">Click any node to see where it comes from. Double-click a person to focus on them.</p></div>
+            <div class="panel" id="groups-panel"><h3 style="margin-bottom:2px">Groups found</h3><p class="muted" style="font-size:12.5px;margin-bottom:6px">Louvain community detection on calls, money, shared identifiers and joint FIRs. Click a group to isolate it.</p><div id="groups"></div></div>
+            <div class="panel"><h3>Connect two people</h3><p class="muted" style="font-size:12.5px">Shortest chain of evidence between them, across every source.</p>
+              <div class="path-form"><input class="field" id="path-a" list="people" placeholder="From person"><input class="field" id="path-b" list="people" placeholder="To person">
+              <button class="btn small" id="btn-path" style="justify-self:start">Find the link</button></div><datalist id="people"></datalist></div>
             <div class="panel"><h3 style="margin-bottom:6px">Key players</h3><p class="muted" style="font-size:12.5px;margin-bottom:6px">Ranked by betweenness: who the network depends on to stay connected.</p><div id="kp"></div></div>
           </div>
         </div>
@@ -681,7 +703,19 @@ const TYPE = {
 };
 const SRC = {FIR: '#9A8756', CDR: '#B8741A', BANK: '#2D7A4E', RTO: '#6F4C9B', FUSED: '#5B6478'};
 const COMM = ['#2B4AA0', '#1F7A8C', '#2D7A4E', '#6F4C9B', '#B8741A', '#8A4B2B', '#5B6478', '#9A8756', '#3F6FB5', '#7A8F3A'];
+const KIND = {money: ['Money moved', '#2D7A4E'], shared: ['Shared phone, vehicle or account', '#6F4C9B'],
+              'co-accused': ['Accused in the same FIR', '#9A8756'], calls: ['Phone calls', '#B8741A']};
+const DIM = {node: '#E7E9EE', font: '#C5CAD3', edge: '#EDEFF2'};
 let network = null, nodesDS = null, edgesDS = null, loadedNet = null, netMode = 'persons', focusId = null, resolvedView = true, peopleMap = {};
+let dimmed = false, hiddenTypes = new Set(), groupList = [];
+
+function kindOf(etype) {                   // persons view: strongest kind of evidence on a fused link
+  const ks = etype.split(' + ');
+  if (ks.includes('money')) return 'money';
+  if (ks.some(k => k.startsWith('shared'))) return 'shared';
+  if (ks.includes('co-accused')) return 'co-accused';
+  return 'calls';
+}
 
 loaders.network = async () => {
   if (loadedNet) return;
@@ -703,7 +737,7 @@ function setMode(mode) {
   $('#er-toggle').classList.toggle('hidden', mode !== 'focus');
 }
 
-function visNode(n, colourBy) {
+function visNode(n, colourBy, big = false) {
   const t = TYPE[n.type] || TYPE.Summary;
   let color = colourBy === 'community' && n.community != null ? COMM[n.community % COMM.length] : t.color;
   if (n.protected) color = '#B9BEC7';
@@ -715,11 +749,14 @@ function visNode(n, colourBy) {
   if (n.type === 'Location') label = n.label;
   if (n.owner && (n.type === 'Phone' || n.type === 'Account') && n.level != null) label += `
 ${n.owner}`;
+  const col = {background: color, border: n.alert ? '#B3261E' : n.in_review ? '#B8741A' : '#FFFFFF',
+               highlight: {background: color, border: '#1C2333'}, hover: {background: color, border: '#1C2333'}};
+  const font = {face: 'Mukta', size: n.type === 'Person' ? (colourBy === 'community' ? 17 : 15) : (big ? 0 : 12),
+                color: '#1C2333', strokeWidth: 5, strokeColor: '#ffffff', multi: false};
   return {
     id: n.id, raw: n, label, shape: t.shape, size, ...(n.level != null ? {level: n.level} : {}),
-    color: {background: color, border: n.alert ? '#B3261E' : n.in_review ? '#B8741A' : '#FFFFFF', highlight: {background: color, border: '#1C2333'}, hover: {background: color, border: '#1C2333'}},
+    color: col, baseColor: col, font, baseFont: font, hidden: hiddenTypes.has(n.type),
     borderWidth: n.alert || n.in_review ? 4 : 1.5,
-    font: {face: 'Mukta', size: n.type === 'Person' ? 15 : 12, color: '#1C2333', strokeWidth: 4, strokeColor: '#ffffff', multi: false},
     title: tooltip(n),
   };
 }
@@ -740,15 +777,18 @@ function visEdge(e) {
   const parts = [e.etype.replace(/_/g, ' ').toLowerCase()];
   if (e.count) parts.push(`${e.count} calls`); if (e.amount) parts.push(rupees(e.amount));
   if (e.first) parts.push(`${e.first.slice(0, 10)} to ${(e.last || '').slice(0, 10)}`);
-  return {id: e.id, from: e.from, to: e.to, raw: e, width: w, color: {color: SRC[e.source] || '#9AA0AA', opacity: .75},
+  const fused = e.source === 'FUSED';
+  const col = {color: fused ? KIND[kindOf(e.etype)][1] : SRC[e.source] || '#9AA0AA', opacity: fused ? .85 : .75};
+  return {id: e.id, from: e.from, to: e.to, raw: e, width: fused ? w + 1 : w, color: col, baseColor: col,
     arrows: ['CALLED', 'TRANSFERRED_TO'].includes(e.etype) ? {to: {enabled: true, scaleFactor: .5}} : undefined,
     dashes: e.etype === 'SEEN_WITH' || e.etype === 'LIVES_IN', smooth: {type: 'continuous'},
-    title: parts.join(', ') + (e.source ? ` (source: ${e.source})` : ''), font: {size: 11, face: 'Mukta', strokeWidth: 3, color: '#4A5263'}};
+    title: parts.join(', ') + (e.source && !fused ? ` (source: ${e.source})` : ''), font: {size: 11, face: 'Mukta', strokeWidth: 3, color: '#4A5263'}};
 }
 function render(data, colourBy, opts = {}) {
-  nodesDS = new vis.DataSet(data.nodes.map(n => visNode(n, colourBy)));
-  edgesDS = new vis.DataSet(data.edges.map(visEdge));
   const big = data.nodes.length > 250;
+  dimmed = false;
+  nodesDS = new vis.DataSet(data.nodes.map(n => visNode(n, colourBy, big)));
+  edgesDS = new vis.DataSet(data.edges.map(visEdge));
   const options = {
     physics: opts.hierarchical ? false : {solver: 'forceAtlas2Based', forceAtlas2Based: {gravitationalConstant: big ? -40 : -70, springLength: big ? 60 : 110, avoidOverlap: .4}, stabilization: {iterations: big ? 220 : 160}},
     layout: opts.hierarchical ? {hierarchical: {enabled: true, direction: 'LR', levelSeparation: 125, nodeSpacing: 90}}
@@ -758,7 +798,13 @@ function render(data, colourBy, opts = {}) {
   };
   if (!network) {
     network = new vis.Network($('#net-canvas'), {nodes: nodesDS, edges: edgesDS}, options);
-    network.on('click', p => { if (p.nodes.length) nodeClicked(p.nodes[0]); });
+    network.on('click', p => {
+      if (p.nodes.length) {
+        const id = p.nodes[0];
+        if (nodesDS.get(id)?.raw.type !== 'Summary') isolate([id, ...network.getConnectedNodes(id)]);
+        nodeClicked(id);
+      } else if (!p.edges.length) { clearIsolate(); $$('.grp').forEach(g => g.classList.remove('on')); }
+    });
     network.on('doubleClick', p => { if (p.nodes.length) { const n = nodesDS.get(p.nodes[0]).raw; if (n.type === 'Person' || n.type !== 'Summary') focusOn(n.id, resolvedView); } });
     network.on('stabilizationIterationsDone', () => network.setOptions({physics: {enabled: false}}));
   } else {
@@ -767,17 +813,85 @@ function render(data, colourBy, opts = {}) {
     if (!opts.hierarchical) network.setOptions({physics: options.physics});
   }
   legend(colourBy, data);
+  $('#net-nodes').innerHTML = [...new Set(data.nodes.filter(n => n.type !== 'Summary').map(n => n.label))]
+    .slice(0, 600).map(l => `<option value="${esc(l)}">`).join('');
+}
+
+/* Isolate a set of nodes: everything else fades so their links stand out. */
+function isolate(ids) {
+  const keep = new Set(ids);
+  nodesDS.update(nodesDS.get().map(n => keep.has(n.id)
+    ? {id: n.id, color: n.baseColor, font: {...n.baseFont, size: Math.max(n.baseFont.size, 12)}}
+    : {id: n.id, color: {background: DIM.node, border: DIM.node, highlight: n.baseColor.highlight, hover: n.baseColor.hover},
+       font: {...n.baseFont, color: DIM.font, size: Math.min(n.baseFont.size, 12)}}));
+  edgesDS.update(edgesDS.get().map(e => keep.has(e.from) && keep.has(e.to)
+    ? {id: e.id, color: e.baseColor} : {id: e.id, color: {color: DIM.edge, opacity: 1}}));
+  dimmed = true;
+}
+function clearIsolate() {
+  if (!dimmed) return;
+  nodesDS.update(nodesDS.get().map(n => ({id: n.id, color: n.baseColor, font: n.baseFont})));
+  edgesDS.update(edgesDS.get().map(e => ({id: e.id, color: e.baseColor})));
+  dimmed = false;
 }
 function legend(colourBy, data) {
-  const types = [...new Set(data.nodes.map(n => n.type))].filter(t => t !== 'Summary');
-  const srcs = [...new Set(data.edges.map(e => e.source).filter(Boolean))];
-  $('#net-legend').innerHTML = (colourBy === 'community'
-    ? `<span><span class="sw" style="background:${COMM[0]}"></span>Colour = group</span><span>Size = influence</span>`
-    : types.map(t => `<span><span class="sw" style="background:${TYPE[t].color}"></span>${t}</span>`).join(''))
-    + srcs.map(s => `<span><span class="ln" style="background:${SRC[s]}"></span>${s === 'FUSED' ? 'Fused link' : s + ' link'}</span>`).join('')
-    + `<span><span class="sw" style="background:#fff;border:3px solid #B3261E"></span>In an alert</span>`
-    + `<span><span class="sw" style="background:#fff;border:3px solid #B8741A"></span>Possible match pending</span>`;
+  const counts = {};
+  data.nodes.forEach(n => { if (n.type !== 'Summary') counts[n.type] = (counts[n.type] || 0) + 1; });
+  const srcs = [...new Set(data.edges.map(e => e.source).filter(x => x && x !== 'FUSED'))];
+  const kinds = [...new Set(data.edges.filter(e => e.source === 'FUSED').map(e => kindOf(e.etype)))];
+  const rings = `<span><span class="sw" style="background:#fff;border:3px solid #B3261E"></span>In an alert</span>`
+              + `<span><span class="sw" style="background:#fff;border:3px solid #B8741A"></span>Possible match pending</span>`;
+  $('#net-legend').innerHTML = colourBy === 'community'
+    ? `<span>Colour = group, size = influence.</span>`
+      + kinds.map(k => `<span><span class="ln" style="background:${KIND[k][1]}"></span>${KIND[k][0]}</span>`).join('') + rings
+    : `<span class="muted">Show</span>` + Object.entries(counts).map(([t, n]) =>
+        `<button class="lg ${hiddenTypes.has(t) ? 'off' : ''}" data-type="${t}" aria-pressed="${!hiddenTypes.has(t)}"><span class="sw" style="background:${TYPE[t].color}"></span>${t} ${num(n)}</button>`).join('')
+      + srcs.map(x => `<span><span class="ln" style="background:${SRC[x]}"></span>${x} link</span>`).join('') + rings;
 }
+$('#net-legend').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  const t = b.dataset.type, off = !hiddenTypes.has(t);
+  if (off) hiddenTypes.add(t); else hiddenTypes.delete(t);
+  b.classList.toggle('off', off); b.setAttribute('aria-pressed', String(!off));
+  nodesDS.update(nodesDS.get().filter(n => n.raw.type === t).map(n => ({id: n.id, hidden: off})));
+});
+$('#net-tools').addEventListener('click', e => {
+  const z = e.target.closest('[data-z]')?.dataset.z; if (!z || !network) return;
+  if (z === 'fit') network.fit({animation: !reduced});
+  else network.moveTo({scale: network.getScale() * (z === 'in' ? 1.35 : 1 / 1.35), animation: !reduced});
+});
+$('#net-find').addEventListener('change', e => {
+  const q = e.target.value.trim().toLowerCase(); if (!q || !nodesDS) return;
+  const all = nodesDS.get();
+  const hit = all.find(n => (n.raw.label || '').toLowerCase() === q) || all.find(n => (n.raw.label || '').toLowerCase().includes(q));
+  if (!hit) { toast('Nothing by that name in this view'); return; }
+  if (hit.hidden) { hiddenTypes.delete(hit.raw.type); nodesDS.update({id: hit.id, hidden: false}); }
+  network.selectNodes([hit.id]); isolate([hit.id, ...network.getConnectedNodes(hit.id)]);
+  network.focus(hit.id, {scale: 1.3, animation: !reduced}); nodeClicked(hit.id);
+});
+function renderGroups(d) {
+  const by = {};
+  d.nodes.filter(n => n.type === 'Person').forEach(n => (by[n.community] = by[n.community] || []).push(n));
+  groupList = Object.entries(by).map(([c, ms]) => ({c: +c, ms: ms.sort((a, b) => (b.records || []).length - (a.records || []).length || (b.centrality || 0) - (a.centrality || 0))}))
+    .sort((a, b) => b.ms.length - a.ms.length);
+  $('#groups').innerHTML = groupList.map((g, i) => {
+    const recs = g.ms.reduce((t, m) => t + (m.records || []).length, 0), alerts = g.ms.filter(m => m.alert).length;
+    return `<div class="grp" data-g="${i}" role="button" tabindex="0"><span class="sw" style="background:${COMM[g.c % COMM.length]}"></span>
+      <div><b>${esc(g.ms[0].label)}</b>${g.ms.length > 1 ? ` and ${g.ms.length - 1} other${g.ms.length > 2 ? 's' : ''}` : ''}
+      <div class="muted">${recs} FIR records${alerts ? `, ${alerts} named in alerts` : ''}</div></div></div>`;
+  }).join('');
+}
+function pickGroup(el) {
+  const g = groupList[+el.dataset.g]; if (!g) return;
+  const was = el.classList.contains('on');
+  $$('.grp').forEach(x => x.classList.remove('on'));
+  if (was) { clearIsolate(); network.fit({animation: !reduced}); return; }
+  el.classList.add('on');
+  const ids = g.ms.map(m => m.id);
+  isolate(ids); network.fit({nodes: ids, animation: !reduced});
+}
+$('#groups').addEventListener('click', e => { const el = e.target.closest('.grp'); if (el) pickGroup(el); });
+$('#groups').addEventListener('keydown', e => { const el = e.target.closest('.grp'); if (el && e.key === 'Enter') pickGroup(el); });
 async function loadOverview(level) {
   setMode(level);
   const token = netMode;
@@ -787,6 +901,8 @@ async function loadOverview(level) {
     if (netMode !== token) return;                     // the analyst moved on while this loaded
     if (!d.nodes.length) { $('#net-caption').textContent = 'No links yet. Run the analysis first.'; return; }
     render(d, level === 'persons' ? 'community' : 'type');
+    $('#groups-panel').classList.toggle('hidden', level !== 'persons');
+    if (level === 'persons') renderGroups(d);
     const persons = d.nodes.filter(n => n.type === 'Person');
     if (level === 'persons') {
       peopleMap = {}; persons.forEach(p => peopleMap[p.label] = p.id);
@@ -804,6 +920,7 @@ async function focusOn(id, resolved = true) {
   try {
     const d = await api(`/graph/${encodeURIComponent(id)}?hops=2&resolved=${resolved}`);
     render(d, 'type');
+    $('#groups-panel').classList.add('hidden');
     const c = d.nodes.find(n => n.id === d.center) || {};
     const recs = d.nodes.filter(n => n.type === 'Person');
     $('#net-caption').innerHTML = resolved
@@ -822,6 +939,7 @@ $('#btn-path').addEventListener('click', async () => {
   const byId = Object.fromEntries(d.nodes.map(n => [n.id, n]));
   d.nodes.forEach(n => n.level = d.path.indexOf(n.id));
   render(d, 'type', {hierarchical: true});
+  $('#groups-panel').classList.add('hidden');
   network.fit({animation: !reduced});
   $('#net-caption').innerHTML = `<b>${d.hops} hops</b> connect ${esc(byId[d.path[0]].label)} to ${esc(byId[d.path.at(-1)].label)}`;
   const steps = d.path.map((id, i) => {
