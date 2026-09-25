@@ -1,13 +1,148 @@
 id,station,date,section,narrative
-FIR-GNR-001,PS Gomtinagar,2026-09-01,"IPC 420, 406","Complainant Ramesh Tiwari reported that one Rakesh Kumar Yadav, resident of Sector 12 Indira Nagar, Lucknow, fraudulently took Rs 2.4 lakh on the pretext of getting him a government tender. The accused arrived in a white Maruti Swift bearing registration UP14CQ5566 and contacted the complainant repeatedly on mobile 9812345678. When approached for refund, the accused switched off his phone and absconded."
-FIR-GNR-002,PS Gomtinagar,2026-09-04,IPC 379,"Deepak Srivastava lodged a complaint of theft of his laptop bag from Gomtinagar Viram Khand. CCTV footage shows an unknown male on a bicycle. Witness Sunita Devi (W/o Harish Kumar, 34 Viram Khand) stated she saw the man run towards the highway. Her contact number is 9001122334."
-FIR-GNR-003,PS Gomtinagar,2026-09-08,"IPC 323, 504","Priya Verma, W/o Anand Verma, resident of Sarojini Nagar, reported assault and verbal abuse by her neighbour during a property dispute. Medical examination report attached. Priya can be contacted on 8877665544."
-FIR-GNR-004,PS Gomtinagar,2026-09-11,IPC 307,Ajay Pandey was stabbed near Sector-9 market. Eyewitness account from Vinod Mishra (phone 7001234567) identifies two assailants fleeing on a motorcycle. Investigation ongoing; CCTV sourcing initiated.
-FIR-HRG-001,PS Hazratganj,2026-09-06,IPC 420,"Mohan Lal Gupta reported that a person identifying himself as R.K. Yadav, claiming to be a senior procurement officer, defrauded him of Rs 1.8 lakh under the guise of a lucrative supply contract. The accused communicated via phone 9812345678 and was last seen driving vehicle UP14CQ5566. Similar modus operandi as case FIR-GNR-001 noted by the SHO."
-FIR-HRG-002,PS Hazratganj,2026-09-09,IPC 354,"A woman, Sunita Devi, D/o Rampal Singh, of Hazratganj area (phone 9321456780), filed a complaint of molestation against an unidentified person on Mahatma Gandhi Marg. The accused fled before police arrival. Statement recorded."
-FIR-HRG-003,PS Hazratganj,2026-09-13,"IPC 468, 471",Bank of Awadh branch manager reported forged cheques being presented for encashment. Account numbers 900123456789 and 900987654321 flagged. Suspect used phone 9988001122 in three separate transactions. Handwriting analysis requested.
-FIR-HRG-004,PS Hazratganj,2026-09-16,"IPC 379, 411","Mobile phones and valuables worth Rs 90,000 stolen from a parked vehicle at Hazratganj market. IMEI 354521089012345 recovered from pawn shop. Accused Bhola Prasad, alias Bholu, arrested. CDR being sought from operator."
-FIR-ALB-001,PS Alambagh,2026-09-10,"IPC 420, 120B","Sanjay Kumar Rastogi complained that Rakesh s/o Mahesh Yadav, a.k.a. 'Rocky', cheated him of Rs 3.1 lakh by claiming to arrange foreign visa processing. The fraud was perpetrated via phone 9812345678 and cash was transferred to account no 500112233445. The accused's vehicle, UP14CQ5566, was spotted parked outside the complainant's office."
-FIR-ALB-002,PS Alambagh,2026-09-12,IPC 376,Serious offence reported. Victim's name withheld per court order. Investigating officer SHO Alambagh handling. Forensic kit dispatched.
-FIR-ALB-003,PS Alambagh,2026-09-15,"IPC 147, 148, 149","Unlawful assembly and rioting near Alambagh bus stand. Eight persons detained, five released on bail. Ringleader identified as Suresh alias Sonu, phone 9870011223. Property damage estimated at Rs 45,000."
-FIR-ALB-004,PS Alambagh,2026-09-18,NDPS 20(b)(ii)(B),Patrol unit apprehended Amit Sharma with 200g charas near Alambagh railway station. Accused gave phone number 9900112233. Supplier network under investigation; CDRs of last 90 days sought.
+FIR-KSB-001,PS Kaiserbagh,2026-06-01,"BNS 115(2), 352",Anita Bano of Kaiserbagh was assaulted by Rizwan Kushwaha during a dispute over parking.
+FIR-HZG-001,PS Hazratganj,2026-06-03,"BNS 85, 115(2)",Preeti Singh of Hazratganj reported cruelty and assault by unknown persons at the matrimonial home. The complainant can be contacted on 9235309679.
+FIR-MHN-001,PS Mahanagar,2026-06-04,BNS 304,Kavita Tiwari reported that two unknown youths on a motorcycle snatched her mobile phone near Mahanagar market and fled towards the main road.
+FIR-KSB-002,PS Kaiserbagh,2026-06-05,"BNS 85, 115(2)",Meena Gupta of Kaiserbagh reported cruelty and assault by Amit Tripathi at the matrimonial home.
+FIR-GMN-001,PS Gomti Nagar,2026-06-06,"BNS 318(4), 316(2)",Kamlesh Agarwal reported receiving threats by unknown persons regarding a land dispute in Gomti Nagar. The complainant can be contacted on 8942159140.
+FIR-ALB-001,PS Alambagh,2026-06-06,"BNS 115(2), 352",Satish Shukla of Alambagh was assaulted by Vijay Dubey during a dispute over parking. The complainant can be contacted on 6428000733.
+FIR-GMN-002,PS Gomti Nagar,2026-06-07,"BNS 318(4), 316(2)",Ramesh Tiwari stated that Rakesh Kumar Yadav posed as a contractor with contacts in the PWD department and collected Rs 2.4 lakh as security money. The accused came in a car bearing registration UP14CQ5566. His mobile 9812345678 has been switched off since the payment.
+FIR-ALB-002,PS Alambagh,2026-06-08,"BNS 115(2), 352",Amit Kashyap of Charbagh was assaulted by Manoj Kushwaha during a dispute over parking. The complainant can be contacted on 6222197719.
+FIR-GMN-003,PS Gomti Nagar,2026-06-09,"BNS 331(4), 305",House of Preeti Chauhan at Gomti Nagar was broken into at night by unknown persons; jewellery and cash were stolen. The complainant can be contacted on 6273771053.
+FIR-GMN-004,PS Gomti Nagar,2026-06-10,BNS 303(2),Rajesh Ansari reported theft of household articles from the residence at Vibhuti Khand by Brijesh Dubey.
+FIR-AMN-001,PS Aminabad,2026-06-11,"BNS 85, 115(2)",Ruksana Tripathi of Chowk reported cruelty and assault by Ashok Pal at the matrimonial home. The complainant can be contacted on 7940847439.
+FIR-VKN-001,PS Vikas Nagar,2026-06-12,BNS 304,Seema Pandey reported that two unknown youths on a motorcycle snatched her mobile phone near Vikas Nagar market and fled towards the main road.
+FIR-MHN-002,PS Mahanagar,2026-06-13,"BNS 85, 115(2)",Priya Verma of Mahanagar reported cruelty and assault by her husband Anand Verma at the matrimonial home. The complainant can be contacted on 6608801042.
+FIR-ALB-003,PS Alambagh,2026-06-13,BNS 304,Anita Sharma reported that two unknown youths on a motorcycle snatched her mobile phone near Charbagh market and fled towards the main road.
+FIR-VKN-002,PS Vikas Nagar,2026-06-14,BNS 304,Anjali Rajput reported that two unknown youths on a motorcycle snatched her mobile phone near Vikas Nagar market and fled towards the main road.
+FIR-GMN-005,PS Gomti Nagar,2026-06-14,BNS 304,Suman Devi reported that two unknown youths on a motorcycle snatched her mobile phone near Vibhuti Khand market and fled towards the main road.
+FIR-ALB-004,PS Alambagh,2026-06-15,BNS 303(2),Dinesh Dubey reported theft of household articles from the residence at Alambagh by Dinesh Kashyap. The complainant can be contacted on 8035321311.
+FIR-HZG-002,PS Hazratganj,2026-06-16,BNS 304,Rashmi Saxena reported that Bhola Prasad on motorcycle UP32AZ1234 snatched her mobile phone near Hazratganj market and fled towards the main road.
+FIR-AMN-002,PS Aminabad,2026-06-16,BNS 351(2),Brijesh Tiwari reported receiving threats by Umesh Pandey regarding a land dispute in Chowk.
+FIR-MHN-003,PS Mahanagar,2026-06-18,"BNS 85, 115(2)",Rekha Bano of Mahanagar reported cruelty and assault by Rahul Gupta at the matrimonial home.
+FIR-ALB-005,PS Alambagh,2026-06-19,NDPS Act 8/21/29,On secret information a patrol team apprehended Chhotu Kashyap near Charbagh and recovered 45 grams of smack.
+FIR-AMN-003,PS Aminabad,2026-06-20,"BNS 115(2), 352",Kavita Rawat of Chowk was assaulted by Pankaj Tripathi during a dispute over parking.
+FIR-VKN-003,PS Vikas Nagar,2026-06-20,"BNS 115(2), 352",Deepak Singh of Aliganj was assaulted by unknown persons during a dispute over parking.
+FIR-GMN-006,PS Gomti Nagar,2026-06-20,"BNS 331(4), 305",House of Nitin Rizvi at Vibhuti Khand was broken into at night by Arun Bajpai; jewellery and cash were stolen.
+FIR-ALB-006,PS Alambagh,2026-06-21,BNS 351(2),Arun Mishra reported receiving threats by Deepak Sharma regarding a land dispute in Charbagh.
+FIR-GMN-007,PS Gomti Nagar,2026-06-22,BNS 303(2),Kavita Awasthi reported theft of household articles from the residence at Gomti Nagar by Shahid Ansari. The complainant can be contacted on 6598443495.
+FIR-MHN-004,PS Mahanagar,2026-06-23,"BNS 115(2), 352",Deepak Srivastava of Indira Nagar was assaulted by unknown persons during a dispute over parking.
+FIR-ALB-007,PS Alambagh,2026-06-23,BNS 351(2),Faizan Qureshi reported receiving threats by Arun Bajpai regarding a land dispute in Alambagh.
+FIR-HZG-003,PS Hazratganj,2026-06-23,"BNS 318(4), 316(2)",Alok Srivastava stated that R.K. Yadav posed as a contractor with contacts in the PWD department and collected Rs 3.1 lakh as security money. The accused came in a car bearing registration UP14CQ5566. His mobile 9812345678 has been switched off since the payment.
+FIR-CHT-001,PS Chinhat,2026-06-23,"BNS 115(2), 352",Brijesh Chauhan of Chinhat was assaulted by Lalit Rawat during a dispute over parking. The complainant can be contacted on 8932608107.
+FIR-AMN-004,PS Aminabad,2026-06-24,"BNS 115(2), 352",Arun Gupta of Chowk was assaulted by Naresh Maurya during a dispute over parking. The complainant can be contacted on 9593115499.
+FIR-VKN-004,PS Vikas Nagar,2026-06-24,BNS 351(2),Satish Verma reported receiving threats by unknown persons regarding a land dispute in Aliganj.
+FIR-GMN-008,PS Gomti Nagar,2026-06-25,"BNS 318(4), 316(2)",Rahul Agarwal reported receiving threats by unknown persons regarding a land dispute in Gomti Nagar. The complainant can be contacted on 8942159140.
+FIR-KSB-003,PS Kaiserbagh,2026-06-25,BNS 351(2),Arun Ansari reported receiving threats by Sandeep Kushwaha regarding a land dispute in Kaiserbagh. The complainant can be contacted on 7649705456.
+FIR-ALB-008,PS Alambagh,2026-06-25,BNS 304,Rashmi Nigam reported that two unknown youths on a motorcycle snatched her mobile phone near Charbagh market and fled towards the main road.
+FIR-KSB-004,PS Kaiserbagh,2026-06-26,"BNS 85, 115(2)",Ruksana Srivastava of Kaiserbagh reported cruelty and assault by Harish Siddiqui at the matrimonial home. The complainant can be contacted on 6332254767.
+FIR-MHN-005,PS Mahanagar,2026-06-26,BNS 304,Meena Kumar reported that two unknown youths on a motorcycle snatched her mobile phone near Indira Nagar market and fled towards the main road.
+FIR-ALB-009,PS Alambagh,2026-06-27,"BNS 331(4), 305",House of Ajay Saxena at Sarojini Nagar was broken into at night by Sunil Qureshi; jewellery and cash were stolen.
+FIR-AMN-005,PS Aminabad,2026-06-30,BNS 304,Priya Khatoon reported that two unknown youths on a motorcycle snatched her mobile phone near Chowk market and fled towards the main road.
+FIR-GMN-009,PS Gomti Nagar,2026-07-01,BNS 303(2),Deepak Srivastava reported theft of household articles from the residence at Vibhuti Khand by unknown persons.
+FIR-GMN-010,PS Gomti Nagar,2026-07-01,"BNS 331(4), 305",House of Suresh Siddiqui at Gomti Nagar was broken into at night by Amit Yadav; jewellery and cash were stolen. The complainant can be contacted on 7642258009.
+FIR-KSB-005,PS Kaiserbagh,2026-07-02,"BNS 115(2), 352",Ashok Tiwari of Kaiserbagh was assaulted by unknown persons during a dispute over parking. The complainant can be contacted on 9687648814.
+FIR-AMN-006,PS Aminabad,2026-07-03,NDPS Act 8/21/29,"On secret information a patrol team apprehended Lucky Pal near Chowk and recovered 43 grams of smack. During questioning he named his supplier as Bunty bhai, reachable on 9900112233."
+FIR-ALB-010,PS Alambagh,2026-07-03,BNS 303(2),Rahul Pal reported theft of household articles from the residence at Alambagh by Imtiaz Singh.
+FIR-AMN-007,PS Aminabad,2026-07-03,BNS 304,Nazia Singh reported that two unknown youths on a motorcycle snatched her mobile phone near Aminabad market and fled towards the main road.
+FIR-GMN-011,PS Gomti Nagar,2026-07-04,BNS 303(2),Lalit Qureshi reported theft of household articles from the residence at Gomti Nagar by Ajay Kashyap.
+FIR-AMN-008,PS Aminabad,2026-07-04,BNS 303(2),Rizwan Gupta reported theft of household articles from the residence at Chowk by Imtiaz Khan.
+FIR-VKN-005,PS Vikas Nagar,2026-07-04,BNS 304,Priya Agarwal reported that two unknown youths on a motorcycle snatched her mobile phone near Vikas Nagar market and fled towards the main road.
+FIR-MHN-006,PS Mahanagar,2026-07-06,BNS 304,Meena Rawat reported that two unknown youths on a motorcycle snatched her mobile phone near Mahanagar market and fled towards the main road.
+FIR-ALB-011,PS Alambagh,2026-07-07,BNS 351(2),Alok Rajput reported receiving threats by unknown persons regarding a land dispute in Charbagh. The complainant can be contacted on 9365055197.
+FIR-ALB-012,PS Alambagh,2026-07-09,"BNS 318(4), 316(2)",Complainant Sushil Pandey of Alambagh reported that one Rakesh s/o Mahesh Yadav took Rs 1.9 lakh on the promise of a government tender and absconded. The accused came in a car bearing registration UP14CQ5566. The accused contacted the complainant repeatedly on mobile 9812345678.
+FIR-MHN-007,PS Mahanagar,2026-07-09,"BNS 115(2), 352",Hemant Awasthi of Mahanagar was assaulted by unknown persons during a dispute over parking.
+FIR-AMN-009,PS Aminabad,2026-07-10,BNS 351(2),Anjali Khan reported receiving threats by unknown persons regarding a land dispute in Chowk. The complainant can be contacted on 7470955636.
+FIR-MHN-008,PS Mahanagar,2026-07-11,"BNS 331(4), 305",House of Rizwan Rajput at Mahanagar was broken into at night by Faizan Siddiqui; jewellery and cash were stolen.
+FIR-HZG-004,PS Hazratganj,2026-07-12,BNS 303(2),Yogesh Siddiqui reported theft of household articles from the residence at Hazratganj by unknown persons.
+FIR-HZG-005,PS Hazratganj,2026-07-12,"BNS 74, 351(2)",Sunita Devi reported receiving threats by unknown persons regarding a land dispute in Hazratganj.
+FIR-MHN-009,PS Mahanagar,2026-07-13,BNS 304,Nidhi Singh reported that two unknown youths on a motorcycle snatched her mobile phone near Indira Nagar market and fled towards the main road.
+FIR-HZG-006,PS Hazratganj,2026-07-13,"BNS 115(2), 352",Hemant Pal of Hazratganj was assaulted by unknown persons during a dispute over parking.
+FIR-CHT-002,PS Chinhat,2026-07-14,BNS 303(2),Hemant Qureshi reported theft of household articles from the residence at Chinhat by Imtiaz Khan.
+FIR-GMN-012,PS Gomti Nagar,2026-07-14,"BNS 85, 115(2)",Suman Gupta of Vibhuti Khand reported cruelty and assault by Prakash Tripathi at the matrimonial home.
+FIR-GMN-013,PS Gomti Nagar,2026-07-16,"BNS 85, 115(2)",Neha Kashyap of Vibhuti Khand reported cruelty and assault by Sandeep Shukla at the matrimonial home.
+FIR-VKN-006,PS Vikas Nagar,2026-07-16,"IT Act 66D, BNS 318(4)","Complainant Nidhi Nigam received a call from 9988001122 posing as bank KYC staff and was induced to transfer Rs 95,000 to account 900123456789."
+FIR-KSB-006,PS Kaiserbagh,2026-07-17,NDPS Act 8/21/29,On secret information a patrol team apprehended Chhotu Rawat near Kaiserbagh and recovered 52 grams of smack.
+FIR-ALB-013,PS Alambagh,2026-07-18,BNS 351(2),Satish Mishra reported receiving threats by unknown persons regarding a land dispute in Alambagh. The complainant can be contacted on 7076539435.
+FIR-AMN-010,PS Aminabad,2026-07-19,"BNS 85, 115(2)",Kiran Khan of Aminabad reported cruelty and assault by Hemant Sharma at the matrimonial home.
+FIR-KSB-007,PS Kaiserbagh,2026-07-19,BNS 304,Preeti Saxena reported that Bholu on motorcycle UP32AZ1234 snatched her mobile phone near Kaiserbagh market and fled towards the main road.
+FIR-VKN-007,PS Vikas Nagar,2026-07-21,"BNS 331(4), 305",House of Rahul Qureshi at Aliganj was broken into at night by unknown persons; jewellery and cash were stolen.
+FIR-AMN-011,PS Aminabad,2026-07-21,"BNS 331(4), 305",House of Ashok Rawat at Aminabad was broken into at night by Ashok Gupta; jewellery and cash were stolen. The complainant can be contacted on 7150526853.
+FIR-ALB-014,PS Alambagh,2026-07-21,"BNS 331(4), 305",House of Kamlesh Gupta at Charbagh was broken into at night by Saurabh Sharma; jewellery and cash were stolen.
+FIR-AMN-012,PS Aminabad,2026-07-21,"BNS 115(2), 352",Arun Pandey of Aminabad was assaulted by Dinesh Pal during a dispute over parking. The complainant can be contacted on 7578391803.
+FIR-HZG-007,PS Hazratganj,2026-07-22,"BNS 115(2), 352",Vijay Pal of Hazratganj was assaulted by Ashok Nigam during a dispute over parking.
+FIR-CHT-003,PS Chinhat,2026-07-23,BNS 304,Nazia Pal reported that two unknown youths on a motorcycle snatched her mobile phone near Chinhat market and fled towards the main road.
+FIR-MHN-010,PS Mahanagar,2026-07-23,BNS 351(2),Javed Saxena reported receiving threats by Arun Agarwal regarding a land dispute in Indira Nagar.
+FIR-CHT-004,PS Chinhat,2026-07-23,BNS 304,Rekha Rawat reported that two unknown youths on a motorcycle snatched her mobile phone near Chinhat market and fled towards the main road.
+FIR-AMN-013,PS Aminabad,2026-07-25,BNS 303(2),Neha Qureshi reported theft of household articles from the residence at Aminabad by Yogesh Verma. The complainant can be contacted on 9926979817.
+FIR-ALB-015,PS Alambagh,2026-07-27,BNS 304,Meena Pandey reported that two unknown youths on a motorcycle snatched her mobile phone near Charbagh market and fled towards the main road.
+FIR-CHT-005,PS Chinhat,2026-07-28,BNS 303(2),Imtiaz Maurya reported theft of household articles from the residence at Chinhat by Faizan Tiwari.
+FIR-AMN-014,PS Aminabad,2026-07-28,"BNS 318(4), 316(2)","शिकायतकर्ता सुरेश चंद्र गुप्ता ने बताया कि राकेश कुमार यादव ने सरकारी ठेका दिलाने के नाम पर उनसे 275,000 रुपये ले लिए। आरोपी सफेद कार UP14CQ5566 से आया था और मोबाइल नंबर 9812345678 से लगातार संपर्क करता था।"
+FIR-ALB-016,PS Alambagh,2026-07-29,BNS 303(2),Prakash Rajput reported theft of household articles from the residence at Charbagh by Amit Sharma. The complainant can be contacted on 8362645802.
+FIR-ALB-017,PS Alambagh,2026-07-29,BNS 303(2),Pankaj Tiwari reported theft of household articles from the residence at Alambagh by Mukesh Chauhan. The complainant can be contacted on 6694995585.
+FIR-AMN-015,PS Aminabad,2026-07-30,BNS 303(2),Arif Gupta reported theft of household articles from the residence at Chowk by Brijesh Dubey.
+FIR-MHN-011,PS Mahanagar,2026-07-30,BNS 351(2),Rajesh Khan reported receiving threats by Arun Bajpai regarding a land dispute in Mahanagar.
+FIR-HZG-008,PS Hazratganj,2026-07-31,NDPS Act 8/21/29,On secret information a patrol team apprehended Sonu Pal near Hazratganj and recovered 44 grams of smack.
+FIR-HZG-009,PS Hazratganj,2026-07-31,BNS 351(2),Dinesh Gupta reported receiving threats by Imtiaz Chaurasia regarding a land dispute in Hazratganj.
+FIR-MHN-012,PS Mahanagar,2026-07-31,BNS 351(2),Priya Verma reported receiving threats by her husband Anand Verma regarding a land dispute in Mahanagar. The complainant can be contacted on 6608801042.
+FIR-AMN-016,PS Aminabad,2026-07-31,BNS 351(2),Hemant Shukla reported receiving threats by unknown persons regarding a land dispute in Chowk.
+FIR-AMN-017,PS Aminabad,2026-08-02,"BNS 115(2), 352",Amit Tripathi of Aminabad was assaulted by Imtiaz Saxena during a dispute over parking. The complainant can be contacted on 7276844091.
+FIR-ALB-018,PS Alambagh,2026-08-04,NDPS Act 8/21/29,On secret information a patrol team apprehended Amit Sharma @ Bunty near Alambagh and recovered 850 grams of smack.
+FIR-CHT-006,PS Chinhat,2026-08-04,BNS 303(2),Arun Saxena reported theft of household articles from the residence at Chinhat by Nadeem Sharma. The complainant can be contacted on 7815260768.
+FIR-ALB-019,PS Alambagh,2026-08-06,"BNS 331(4), 305",House of Sunita Agarwal at Sarojini Nagar was broken into at night by Suresh Kushwaha; jewellery and cash were stolen. The complainant can be contacted on 6427135822.
+FIR-AMN-018,PS Aminabad,2026-08-06,BNS 303(2),Ramesh Yadav reported theft of household articles from the residence at Aminabad by A. Kashyap.
+FIR-CHT-007,PS Chinhat,2026-08-06,"BNS 115(2), 352",Kamlesh Pal of Chinhat was assaulted by Sunita Devi during a dispute over parking.
+FIR-MHN-013,PS Mahanagar,2026-08-08,BNS 303(2),Pankaj Bajpai reported theft of household articles from the residence at Mahanagar by F. Tiwari.
+FIR-GMN-014,PS Gomti Nagar,2026-08-10,"BNS 331(4), 305",House of Sunil Siddiqui at Vibhuti Khand was broken into at night by unknown persons; jewellery and cash were stolen.
+FIR-VKN-008,PS Vikas Nagar,2026-08-10,"BNS 115(2), 351(2)","Gaurav Awasthi reported receiving threats by Pintoo Singh, driver of car UP14CQ5566 regarding a land dispute in Vikas Nagar."
+FIR-AMN-019,PS Aminabad,2026-08-11,NDPS Act 8/21/29,On secret information a patrol team apprehended Salim Khan near Chowk and recovered 140 grams of smack.
+FIR-VKN-009,PS Vikas Nagar,2026-08-12,"BNS 331(4), 305",House of Shalini Bano at Vikas Nagar was broken into at night by Harish Rajput; jewellery and cash were stolen.
+FIR-VKN-010,PS Vikas Nagar,2026-08-12,BNS 303(2),Ajay Pal reported theft of household articles from the residence at Aliganj by Arun Yadav.
+FIR-KSB-008,PS Kaiserbagh,2026-08-14,BNS 303(2),Anil Shukla reported theft of household articles from the residence at Kaiserbagh by Sunil Awasthi.
+FIR-AMN-020,PS Aminabad,2026-08-14,NDPS Act 8/21/29,"On secret information a patrol team apprehended Lucky Rawat near Aminabad and recovered 35 grams of smack. During questioning he named his supplier as Bunty bhai, reachable on 9900112233."
+FIR-GMN-015,PS Gomti Nagar,2026-08-15,"BNS 85, 115(2)",Shabana Qureshi of Vibhuti Khand reported cruelty and assault by unknown persons at the matrimonial home.
+FIR-MHN-014,PS Mahanagar,2026-08-17,"IT Act 66D, BNS 318(4)","Rohit Nigam reported an online job-offer fraud. After paying a registration fee of Rs 95,000 into account 900987654321, the caller on 9988001122 stopped responding."
+FIR-ALB-020,PS Alambagh,2026-08-18,BNS 303(2),Satish Ansari reported theft of household articles from the residence at Sarojini Nagar by unknown persons. The complainant can be contacted on 6566988397.
+FIR-GMN-016,PS Gomti Nagar,2026-08-19,"BNS 115(2), 352",Prakash Yadav of Vibhuti Khand was assaulted by unknown persons during a dispute over parking. The complainant can be contacted on 7255653843.
+FIR-CHT-008,PS Chinhat,2026-08-20,"BNS 85, 115(2)",Shabana Bano of Chinhat reported cruelty and assault by Satish Bajpai at the matrimonial home. The complainant can be contacted on 7735834181.
+FIR-GMN-017,PS Gomti Nagar,2026-08-20,BNS 351(2),Suman Gupta reported receiving threats by unknown persons regarding a land dispute in Vibhuti Khand.
+FIR-ALB-021,PS Alambagh,2026-08-20,BNS 303(2),Preeti Kumar reported theft of household articles from the residence at Sarojini Nagar by unknown persons. The complainant can be contacted on 8756732853.
+FIR-GMN-018,PS Gomti Nagar,2026-08-21,BNS 303(2),Kamlesh Bajpai reported theft of household articles from the residence at Vibhuti Khand by Imtiaz Singh.
+FIR-ALB-022,PS Alambagh,2026-08-23,"BNS 115(2), 352",Amit Kumar of Sarojini Nagar was assaulted by unknown persons during a dispute over parking.
+FIR-VKN-011,PS Vikas Nagar,2026-08-24,"BNS 318(4), 316(2)",Kamlesh Rizvi reported receiving threats by unknown persons regarding a land dispute in Aliganj. The complainant can be contacted on 7555487416.
+FIR-KSB-009,PS Kaiserbagh,2026-08-24,"BNS 115(2), 352",Naresh Rajput of Kaiserbagh was assaulted by unknown persons during a dispute over parking.
+FIR-CHT-009,PS Chinhat,2026-08-24,"BNS 318(4), 316(2)",Complainant Mamta Saxena of Chinhat reported that one Rocky Yadav took Rs 1.6 lakh on the promise of a government tender and absconded. The accused contacted the complainant repeatedly on mobile 9812300456.
+FIR-AMN-021,PS Aminabad,2026-08-24,"BNS 115(2), 352",Sunita Rizvi of Chowk was assaulted by Arun Tripathi during a dispute over parking.
+FIR-ALB-023,PS Alambagh,2026-08-26,BNS 304,Mamta Rajput reported that two unknown youths on a motorcycle snatched her mobile phone near Sarojini Nagar market and fled towards the main road.
+FIR-KSB-010,PS Kaiserbagh,2026-08-26,"BNS 331(4), 305",House of Imtiaz Kushwaha at Kaiserbagh was broken into at night by unknown persons; jewellery and cash were stolen.
+FIR-ALB-024,PS Alambagh,2026-08-26,"BNS 115(2), 352",Kiran Rawat of Alambagh was assaulted by Suresh Awasthi during a dispute over parking.
+FIR-VKN-012,PS Vikas Nagar,2026-08-26,"BNS 318(4), 316(2)",Manoj Agarwal reported receiving threats by unknown persons regarding a land dispute in Aliganj. The complainant can be contacted on 7555487416.
+FIR-MHN-015,PS Mahanagar,2026-08-27,BNS 304,Suman Rawat reported that two unknown youths on a motorcycle snatched her mobile phone near Mahanagar market and fled towards the main road.
+FIR-CHT-010,PS Chinhat,2026-08-27,BNS 351(2),Javed Awasthi reported receiving threats by Imtiaz Chaurasia regarding a land dispute in Chinhat.
+FIR-HZG-010,PS Hazratganj,2026-08-27,"BNS 85, 115(2)",Meena Khan of Hazratganj reported cruelty and assault by unknown persons at the matrimonial home.
+FIR-ALB-025,PS Alambagh,2026-08-28,NDPS Act 8/21/29,On secret information a patrol team apprehended Chhotu Kashyap near Alambagh and recovered 59 grams of smack.
+FIR-AMN-022,PS Aminabad,2026-08-28,BNS 304,Preeti Dubey reported that two unknown youths on a motorcycle snatched her mobile phone near Aminabad market and fled towards the main road.
+FIR-MHN-016,PS Mahanagar,2026-08-29,BNS 303(2),Sunil Yadav reported theft of household articles from the residence at Mahanagar by A. Yadav.
+FIR-MHN-017,PS Mahanagar,2026-08-29,BNS 303(2),Suresh Nigam reported theft of household articles from the residence at Indira Nagar by Rahul Saxena.
+FIR-ALB-026,PS Alambagh,2026-08-29,BNS 303(2),Arif Dubey reported theft of household articles from the residence at Sarojini Nagar by Pankaj Khan. The complainant can be contacted on 7781973665.
+FIR-VKN-013,PS Vikas Nagar,2026-09-01,"BNS 115(2), 352",Vijay Agarwal of Vikas Nagar was assaulted by Prakash Srivastava during a dispute over parking.
+FIR-MHN-018,PS Mahanagar,2026-09-01,BNS 318(4),"Hemant Bajpai stated that Sanjay Rastogi posed as a contractor with contacts in the PWD department and collected Rs 90,000 as security money. His mobile 9839077001 has been switched off since the payment."
+FIR-MHN-019,PS Mahanagar,2026-09-02,BNS 351(2),Javed Gupta reported receiving threats by unknown persons regarding a land dispute in Mahanagar.
+FIR-ALB-027,PS Alambagh,2026-09-02,BNS 351(2),Suresh Qureshi reported receiving threats by Rohit Gupta regarding a land dispute in Alambagh. The complainant can be contacted on 6332353542.
+FIR-ALB-028,PS Alambagh,2026-09-02,BNS 303(2),Preeti Pandey reported theft of household articles from the residence at Alambagh by Nitin Verma. The complainant can be contacted on 9204766826.
+FIR-AMN-023,PS Aminabad,2026-09-04,BNS 317(2),"Raid at Raju Electronics, Aminabad recovered 14 snatched mobile phones. Proprietor Raju Gupta admitted paying sellers from account 300998877001."
+FIR-ALB-029,PS Alambagh,2026-09-06,BNS 304,Pooja Singh reported that two unknown youths on a motorcycle snatched her mobile phone near Charbagh market and fled towards the main road.
+FIR-HZG-011,PS Hazratganj,2026-09-07,BNS 351(2),Ramesh Ansari reported receiving threats by Ramesh Saxena regarding a land dispute in Hazratganj.
+FIR-ALB-030,PS Alambagh,2026-09-08,NDPS Act 8/21/29,मुखबिर की सूचना पर पुलिस टीम ने चारबाग के पास सलीम खान को पकड़ा और उसके कब्जे से 210 ग्राम स्मैक बरामद की। आरोपी मोबाइल नंबर 9335566778 का प्रयोग करता था।
+FIR-VKN-014,PS Vikas Nagar,2026-09-08,BNS 303(2),Ramesh Rawat reported theft of household articles from the residence at Vikas Nagar by unknown persons.
+FIR-CHT-011,PS Chinhat,2026-09-09,"BNS 115(2), 352",Preeti Awasthi of Chinhat was assaulted by unknown persons during a dispute over parking. The complainant can be contacted on 8164067469.
+FIR-AMN-024,PS Aminabad,2026-09-09,"BNS 115(2), 352",Nazia Maurya of Chowk was assaulted by unknown persons during a dispute over parking.
+FIR-ALB-031,PS Alambagh,2026-09-10,"BNS 115(2), 352",Prakash Gupta of Sarojini Nagar was assaulted by Shahid Gupta during a dispute over parking.
+FIR-HZG-012,PS Hazratganj,2026-09-11,BNS 304,Shabana Singh reported that two unknown youths on a motorcycle snatched her mobile phone near Hazratganj market and fled towards the main road.
+FIR-CHT-012,PS Chinhat,2026-09-12,BNS 351(2),Ashok Singh reported receiving threats by Ramesh Pandey regarding a land dispute in Chinhat. The complainant can be contacted on 7083910532.
+FIR-HZG-013,PS Hazratganj,2026-09-14,BNS 303(2),Imtiaz Yadav reported theft of household articles from the residence at Hazratganj by Amit Agarwal.
+FIR-CHT-013,PS Chinhat,2026-09-16,BNS 351(2),Faizan Kashyap reported receiving threats by unknown persons regarding a land dispute in Chinhat.
+FIR-VKN-015,PS Vikas Nagar,2026-09-16,BNS 351(2),Sunil Srivastava reported receiving threats by Rizwan Srivastava regarding a land dispute in Vikas Nagar.
+FIR-ALB-032,PS Alambagh,2026-09-16,BNS 303(2),Suman Tiwari reported theft of household articles from the residence at Sarojini Nagar by Manoj Dubey. The complainant can be contacted on 7407446786.
+FIR-ALB-033,PS Alambagh,2026-09-16,BNS 303(2),Nitin Saxena reported theft of household articles from the residence at Sarojini Nagar by Amit Siddiqui.
+FIR-KSB-011,PS Kaiserbagh,2026-09-18,"BNS 331(4), 305",House of Sandeep Tripathi at Kaiserbagh was broken into at night by unknown persons; jewellery and cash were stolen. The complainant can be contacted on 8093128879.
+FIR-GMN-019,PS Gomti Nagar,2026-09-19,BNS 351(2),Alok Bajpai reported receiving threats by Sandeep Chauhan regarding a land dispute in Vibhuti Khand.

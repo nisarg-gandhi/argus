@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 venv/
 .env
+backend/argus.db
+backend/argus.db-*
+backend/chain_data/

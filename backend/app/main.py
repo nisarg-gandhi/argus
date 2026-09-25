@@ -17,16 +17,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.routes import alerts, audit, entities, graph, process, review, ingest
+from app.routes import alerts, audit, entities, graph, ingest, process, resolution, review
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="Argus — SIH 2026 PS 26189",
-    version="0.2.0",
+    version="0.3.0",
     description=(
-        "Cross-case entity resolution and link-analysis for law enforcement. "
-        "Zero external services — single SQLite file, single terminal."
+        "Cross-case entity resolution, link analysis and a multi-agency evidence chain "
+        "for law enforcement. Zero external services — SQLite files, single terminal."
     ),
 )
 
@@ -44,6 +44,7 @@ app.include_router(process.router)
 app.include_router(entities.router)
 app.include_router(graph.router)
 app.include_router(review.router)
+app.include_router(resolution.router)
 app.include_router(alerts.router)
 app.include_router(audit.router)
 
@@ -52,7 +53,7 @@ app.include_router(audit.router)
 @app.get("/health", tags=["meta"])
 def health():
     """Liveness check."""
-    return {"status": "ok", "service": "argus", "version": "0.2.0"}
+    return {"status": "ok", "service": "argus", "version": "0.3.0"}
 
 # ── Static frontend ───────────────────────────────────────────────────────────
 

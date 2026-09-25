@@ -11,9 +11,21 @@ Demo is tomorrow. Zero external services. No Docker, no Neo4j, no npm build.
   static content. One terminal, one command, one URL.
 
 ## Layout
-backend/app/{main.py,seed.py,extract.py,resolve.py,graphstore.py,analyse.py,ledger.py}
-backend/argus.db        (created at runtime, gitignore it)
-frontend/index.html     (single file, inline <style> and <script>)
+backend/app/{main.py,seed.py,ingest.py,extract.py,extract_spans.py,resolve.py,rules.py,ledger.py}
+backend/app/datagen/    deterministic demo dataset + ground_truth.json (seed 26189)
+backend/app/er/         transliteration, normalisation, blocking, explainable scoring, golden records
+backend/app/graph/      knowledge-graph build, ego/path views, overview + key players, node details
+backend/app/chain/      multi-node evidence chain (Ed25519, Merkle blocks, 3 agency nodes)
+backend/app/routes/     FastAPI routers
+backend/argus.db        (created at runtime, gitignored)
+backend/chain_data/     chain node DBs + keys (created at runtime, gitignored)
+frontend/index.html     (single file, inline <style> and <script>; exempt from the line limit)
+
+## Checks
+- `python -m app.seed --reset --fresh-chain`  clean demo state
+- `python -m app.verify_resolution`            ground-truth ER acceptance test
+- `python -m app._smoke_api`                   full API flow (server must be running)
+- `python -m app.chain.verify`                 independent chain audit
 
 ## Domain rules — match the submitted deck exactly
 - Entity types: Person, Phone, Account, Vehicle, Location, Organisation
@@ -25,6 +37,10 @@ frontend/index.html     (single file, inline <style> and <script>)
   VICTIM nodes are excluded from any cross-case graph query
 - Ledger: append-only SQLite table, row_hash = sha256(prev_hash + payload_json),
   /ledger/verify walks the chain and returns the first broken index or None
+- The ledger lives on 3 chain nodes (backend/chain_data/<node>/node.db), never in argus.db,
+  so re-ingesting case data cannot erase it. Entries are Ed25519-signed by the actor;
+  blocks carry a Merkle root, a rotating proposer signature and per-node endorsements;
+  a block commits only with 2 of 3 nodes validating it
 
 ## Explicitly do not
 - No Docker, no Neo4j, no Kafka, nothing needing a second terminal

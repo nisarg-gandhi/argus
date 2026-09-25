@@ -1,109 +1,80 @@
-"""API smoke test — hits every endpoint and prints PASS/FAIL."""
-import sys
-import urllib.request
-import urllib.error
+"""API smoke test — walks the whole demo flow against a running server.
+
+    uvicorn app.main:app --port 8000        (in one terminal)
+    python -m app._smoke_api                (in another)
+"""
 import json
+import sys
+import urllib.error
+import urllib.request
 
 BASE = "http://localhost:8000"
 failures = 0
 
 
-def check(label: str, url: str, method: str = "GET",
-          body: dict | None = None, expect: int = 200):
+def call(label: str, path: str, method: str = "GET", body: dict | None = None, expect: int = 200):
     global failures
-    data = json.dumps(body).encode() if body else None
-    req  = urllib.request.Request(
-        url, data=data, method=method,
-        headers={"Content-Type": "application/json"} if data else {},
-    )
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(BASE + path, data=data, method=method,
+                                 headers={"Content-Type": "application/json"} if data else {})
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            status = r.status
-            payload = json.loads(r.read())
+        with urllib.request.urlopen(req, timeout=60) as r:
+            status, payload = r.status, json.loads(r.read())
     except urllib.error.HTTPError as e:
-        status = e.code
-        payload = {}
-    except Exception as exc:
-        print(f"  [FAIL] {label}: {exc}")
-        failures += 1
-        return {}
-
+        status, payload = e.code, {}
     ok = status == expect
-    mark = "PASS" if ok else "FAIL"
-    print(f"  [{mark}] {label}  ({status})")
-    if not ok:
-        failures += 1
+    failures += not ok
+    print(f"  [{'PASS' if ok else 'FAIL'}] {label} ({status})")
     return payload
 
 
-print("=" * 60)
-print("  ARGUS API SMOKE TEST")
-print("=" * 60)
-print()
+def expect(label: str, cond: bool) -> None:
+    global failures
+    failures += not cond
+    print(f"  [{'PASS' if cond else 'FAIL'}] {label}")
 
-# Health
-check("GET /health", f"{BASE}/health")
 
-# Pipeline
-r = check("POST /process", f"{BASE}/process", method="POST", body={})
-print(f"         extracted={r.get('extracted_firs')}  alerts={r.get('alerts_generated')}  ledger={r.get('ledger_id')}")
-
-# Entities search
-r = check("GET /entities?q=Rakesh", f"{BASE}/entities?q=Rakesh")
-print(f"         results={r.get('total')}")
-
-# Graph
-r = check("GET /graph/P-001", f"{BASE}/graph/P-001")
-print(f"         nodes={len(r.get('nodes',[]))}  edges={len(r.get('edges',[]))}")
-
-# Graph – not found
-check("GET /graph/NOPE (404)", f"{BASE}/graph/NOPE", expect=404)
-
-# Review queue
-r = check("GET /review-queue", f"{BASE}/review-queue")
-print(f"         queue_len={r.get('count')}")
-
-# Alerts
-r = check("GET /alerts", f"{BASE}/alerts")
-count = r.get("count", 0)
-print(f"         count={count}")
-
-if count:
-    alert_id = r["alerts"][0]["id"]
-    check(f"GET /alert/{alert_id}", f"{BASE}/alert/{alert_id}")
-    check(f"POST /alert/{alert_id}/feedback (tp)",
-          f"{BASE}/alert/{alert_id}/feedback",
-          method="POST", body={"verdict": "tp", "actor": "demo"})
-    r2 = check(f"GET /export/{alert_id}", f"{BASE}/export/{alert_id}")
-    print(f"         bundle_sha256={str(r2.get('bundle_sha256',''))[:16]}...")
-
-# Ledger
-r = check("GET /ledger", f"{BASE}/ledger")
-print(f"         entries={len(r.get('entries',[]))}")
-
-r = check("GET /ledger/verify", f"{BASE}/ledger/verify")
-print(f"         intact={r.get('intact')}  broken={r.get('first_broken_index')}")
-
-# Demo tamper + re-verify
-rows = r.get("entries") or []
-if not rows:
-    r2 = check("GET /ledger (fetch for tamper)", f"{BASE}/ledger")
-    rows = r2.get("entries", [])
-
-check("POST /demo/tamper", f"{BASE}/demo/tamper",
-      method="POST", body={"row_id": 1})
-r3 = check("GET /ledger/verify (after tamper)", f"{BASE}/ledger/verify")
-print(f"         intact={r3.get('intact')}  broken={r3.get('first_broken_index')}")
-tamper_caught = r3.get("intact") is False
-print(f"  [{'PASS' if tamper_caught else 'FAIL'}] Tamper detected by verify")
-if not tamper_caught:
-    failures += 1
-
-print()
-print("=" * 60)
-if failures == 0:
-    print(f"  ALL CHECKS PASSED")
-else:
-    print(f"  {failures} CHECK(S) FAILED")
-print("=" * 60)
-sys.exit(0 if failures == 0 else 1)
+print("=" * 60 + "\n  ARGUS API SMOKE TEST\n" + "=" * 60)
+call("GET /health", "/health")
+r = call("POST /ingest/demo", "/ingest/demo", "POST")
+expect(f"5 source files hashed and sealed in block {r.get('block', {}).get('height')}", len(r.get("files", [])) == 5)
+r = call("POST /process", "/process", "POST")
+res = r.get("resolution", {})
+print(f"         {res.get('possible_pairs')} pairs -> {res.get('candidate_pairs')} compared; "
+      f"{res.get('golden_records')} golden records; {r.get('alerts', {}).get('total')} alerts")
+call("GET /stats", "/stats")
+call("GET /extract", "/extract")
+q = call("GET /review-queue", "/review-queue")
+expect("review queue has items", q.get("count", 0) > 0)
+g = call("GET /resolution/golden", "/resolution/golden")
+master = g["golden"][0]["master_id"] if g.get("golden") else "P-0002"
+call("GET /resolution/pairs", "/resolution/pairs")
+call(f"GET /graph/{master}", f"/graph/{master}")
+call(f"GET /graph/{master}?resolved=false", f"/graph/{master}?resolved=false")
+call("GET /graph/overview", "/graph/overview")
+call("GET /graph/overview?level=entities", "/graph/overview?level=entities")
+call("GET /analytics/key-players", "/analytics/key-players")
+call(f"GET /node/{master}", f"/node/{master}")
+call("GET /graph/NOPE (404)", "/graph/NOPE", expect=404)
+if q.get("queue"):
+    call("POST /review (accept)", f"/review/{q['queue'][0]['id']}", "POST", {"decision": "accept"})
+a = call("GET /alerts", "/alerts")
+if a.get("alerts"):
+    aid = a["alerts"][0]["id"]
+    call("POST feedback tp", f"/alert/{aid}/feedback", "POST", {"verdict": "tp"})
+    b = call("GET /export", f"/export/{aid}")
+    expect("export anchored on-chain with Merkle proof", "merkle_proof" in b.get("anchor", {}))
+call("GET /feedback/stats", "/feedback/stats")
+s = call("GET /chain/status", "/chain/status")
+expect("all 3 nodes in consensus", s.get("consensus", {}).get("votes") == 3)
+call("GET /chain/blocks", "/chain/blocks")
+call("GET /chain/block/1", "/chain/block/1")
+call("POST /demo/tamper (forensic_lab)", "/demo/tamper", "POST", {"node": "forensic_lab"})
+s = call("GET /chain/status (after tamper)", "/chain/status")
+states = {n["node"]: n["state"] for n in s.get("nodes", [])}
+expect(f"tamper detected: {states}", states.get("forensic_lab") == "tampered" and s["consensus"]["quorum"])
+call("POST /chain/heal/forensic_lab", "/chain/heal/forensic_lab", "POST")
+s = call("GET /chain/status (after heal)", "/chain/status")
+expect("consensus restored 3/3", s.get("consensus", {}).get("votes") == 3)
+print("=" * 60 + f"\n  {'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}\n" + "=" * 60)
+sys.exit(1 if failures else 0)

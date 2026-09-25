@@ -1,0 +1,121 @@
+{
+  "must_merge": {
+    "Vikas Chaurasia": [
+      "P-0020",
+      "P-0022"
+    ],
+    "Rakesh Kumar Yadav": [
+      "P-0002",
+      "P-0004",
+      "P-0008",
+      "P-0011"
+    ],
+    "Imran Qureshi": [
+      "P-0005",
+      "P-0012"
+    ],
+    "Amit Sharma": [
+      "P-0031",
+      "P-0025",
+      "P-0029"
+    ],
+    "Salim Khan": [
+      "P-0032",
+      "P-0033"
+    ],
+    "Bhola Prasad": [
+      "P-0035",
+      "P-0037",
+      "P-0040"
+    ],
+    "Repeat offender Ajay Kashyap": [
+      "P-0249",
+      "P-0251"
+    ],
+    "Repeat offender Brijesh Dubey": [
+      "P-0253",
+      "P-0255"
+    ],
+    "Repeat offender Arun Yadav": [
+      "P-0257",
+      "P-0259"
+    ],
+    "Repeat offender Imtiaz Singh": [
+      "P-0261",
+      "P-0263"
+    ],
+    "Repeat offender Faizan Tiwari": [
+      "P-0265",
+      "P-0267"
+    ],
+    "Repeat offender Imtiaz Khan": [
+      "P-0269",
+      "P-0271"
+    ]
+  },
+  "must_not_merge": [
+    [
+      "P-0014",
+      "P-0002"
+    ],
+    [
+      "P-0043",
+      "P-0046"
+    ]
+  ],
+  "review": [
+    {
+      "pair": [
+        "P-0016",
+        "P-0002"
+      ],
+      "truth": "same"
+    },
+    {
+      "pair": [
+        "P-0018",
+        "P-0009"
+      ],
+      "truth": "same"
+    },
+    {
+      "pair": [
+        "P-0014",
+        "P-0002"
+      ],
+      "truth": "different"
+    },
+    {
+      "pair": [
+        "P-0273",
+        "P-0275"
+      ],
+      "truth": "same"
+    },
+    {
+      "pair": [
+        "P-0277",
+        "P-0279"
+      ],
+      "truth": "same"
+    },
+    {
+      "pair": [
+        "P-0280",
+        "P-0281"
+      ],
+      "truth": "different"
+    },
+    {
+      "pair": [
+        "P-0282",
+        "P-0283"
+      ],
+      "truth": "different"
+    }
+  ],
+  "victims_protected": [
+    "P-0047",
+    "P-0048"
+  ]
+}

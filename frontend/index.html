@@ -3,1117 +3,1008 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Argus — SIH 2026 PS 26189</title>
-<meta name="description" content="Argus cross-case entity resolution and link-analysis dashboard for law enforcement." />
+<title>Argus — Investigation Workbench</title>
+<meta name="description" content="Argus: cross-case entity resolution, link analysis and a multi-agency evidence chain for police investigations." />
+<link rel="icon" href="/static/raw_logo.ico" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link href="https://unpkg.com/vis-network@9.1.9/styles/vis-network.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
-
 <style>
-/* ── Reset & tokens ──────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --accent:     #1A56DB;
-  --accent-lt:  #EEF2FF;
-  --accent-dk:  #1246BB;
-  --bg:         #F3F4F6;
-  --surface:    #FFFFFF;
-  --border:     #E5E7EB;
-  --text:       #111827;
-  --text-2:     #6B7280;
-  --text-3:     #9CA3AF;
-  --success:    #059669;
-  --danger:     #DC2626;
-  --warn:       #D97706;
-  --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-  --shadow-md:  0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
-  --radius:     8px;
-  --font:       'Inter', system-ui, sans-serif;
-  --mono:       'JetBrains Mono', monospace;
+  --paper: #F2F3EF;  --sheet: #FFFFFF;  --rule: #D9DCD3;  --rule-2: #E8EAE4;
+  --ink: #1C2333;    --ink-2: #4A5263;  --ink-3: #7C8393;
+  --carbon: #2B4AA0; --carbon-lt: #E6EBF7;
+  --khaki: #9A8756;  --khaki-lt: #F1ECDD;
+  --stamp: #B3261E;  --stamp-lt: #FBE9E7;
+  --seal: #2D7A4E;   --seal-lt: #E3F1E8;
+  --amber: #B8741A;  --amber-lt: #FBF0DE;
+  --violet: #6F4C9B;
+  --font: 'Mukta', 'Nirmala UI', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font); background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.5; }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-size: 12px; }
+.muted { color: var(--ink-3); }
+.hidden { display: none !important; }
 
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.5;
-  min-height: 100vh;
-}
+/* ── Shell ─────────────────────────────────────────────── */
+#app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+#rail { background: var(--ink); color: #DDE1EA; padding: 22px 0; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+#brand { display: flex; align-items: center; gap: 10px; padding: 0 22px 22px; font-weight: 800; font-size: 22px; letter-spacing: -.3px; color: #fff; }
+#brand img { width: 28px; height: 28px; }
+#brand small { display: block; font-weight: 500; font-size: 12px; color: #9AA3B5; letter-spacing: 0; margin-top: -4px; }
+.step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; width: 100%; text-align: left;
+        padding: 11px 22px; background: none; border: 0; color: inherit; cursor: pointer; border-left: 3px solid transparent; }
+.step:hover { background: rgba(255,255,255,.04); }
+.step.active { background: rgba(255,255,255,.07); border-left-color: var(--khaki); }
+.step-n { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #4C5670; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #9AA3B5; }
+.step.done .step-n { background: var(--khaki); border-color: var(--khaki); color: var(--ink); }
+.step.active .step-n { border-color: #fff; color: #fff; }
+.step-t, .step-s { display: block; }
+.step-t { font-weight: 600; font-size: 15px; line-height: 1.25; color: #fff; }
+.step-s { font-size: 12.5px; color: #9AA3B5; line-height: 1.3; margin-top: 2px; }
+.step-s b { color: #F3D58B; font-weight: 600; }
+#rail-foot { margin-top: auto; padding: 16px 22px 0; font-size: 12px; color: #7F889C; line-height: 1.45; }
 
-/* ── Header ─────────────────────────────────────────────────────── */
-#header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  position: sticky; top: 0; z-index: 100;
-}
-#header-inner {
-  max-width: 1400px; margin: 0 auto;
-  display: flex; align-items: center; gap: 24px;
-  padding: 0 24px;
-}
-#logo {
-  font-weight: 700; font-size: 20px; color: var(--accent);
-  letter-spacing: -.5px; padding: 14px 0;
-  white-space: nowrap;
-  display: flex; align-items: center; gap: 10px;
-}
-#argus-logo {
-  height: 28px;
-}
+#main { min-width: 0; display: flex; flex-direction: column; }
+#top { display: flex; align-items: center; gap: 20px; padding: 16px 32px; border-bottom: 1px solid var(--rule); background: var(--sheet); position: sticky; top: 0; z-index: 20; }
+#case-title { font-weight: 700; font-size: 18px; }
+#case-sub { font-size: 13px; color: var(--ink-3); margin-top: -2px; }
+#seal { margin-left: auto; display: flex; align-items: center; gap: 12px; padding: 7px 14px 7px 8px; border-radius: 999px;
+        border: 1.5px solid var(--seal); background: var(--seal-lt); cursor: pointer; transition: background .3s, border-color .3s; }
+#seal-dots { display: flex; gap: 4px; }
+#seal-dots i { width: 22px; height: 22px; border-radius: 50%; background: var(--seal); display: grid; place-items: center; color: #fff; font-style: normal; font-size: 11px; font-weight: 700; }
+#seal-dots i.bad { background: var(--stamp); }
+#seal-dots i.lag { background: var(--amber); }
+#seal-text { font-size: 13px; line-height: 1.2; }
+#seal-text b { display: block; font-size: 14px; }
+#seal.broken { border-color: var(--stamp); background: var(--stamp-lt); animation: throb 1.2s ease-in-out 3; }
+@keyframes throb { 50% { box-shadow: 0 0 0 6px rgba(179,38,30,.15); } }
 
-/* ── Tab bar ─────────────────────────────────────────────────────── */
-#tabs {
-  display: flex; gap: 0; flex: 1;
-}
-.tab {
-  padding: 16px 20px;
-  font-size: 14px; font-weight: 500;
-  color: var(--text-2);
-  cursor: pointer; border: none; background: none;
-  border-bottom: 3px solid transparent;
-  transition: color .15s, border-color .15s;
-  white-space: nowrap;
-  display: flex; align-items: center; gap: 7px;
-}
-.tab:hover { color: var(--text); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-.tab-badge {
-  background: var(--accent); color: #fff;
-  border-radius: 10px; padding: 1px 7px;
-  font-size: 11px; font-weight: 600;
-  display: none;
-}
-.tab-badge.visible { display: inline; }
+#views { padding: 28px 32px 60px; flex: 1; min-width: 0; }
+.view { display: none; }
+.view.active { display: block; }
+h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; line-height: 1.15; }
+h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+h3 { font-size: 15px; font-weight: 700; }
+.lede { color: var(--ink-2); max-width: 70ch; margin: 4px 0 22px; }
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 22px; }
+.stack > * + * { margin-top: 18px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
-/* ── Layout ─────────────────────────────────────────────────────── */
-#main {
-  max-width: 1400px; margin: 0 auto;
-  padding: 32px 24px;
-}
-.section { display: none; }
-.section.active { display: block; }
-
-/* ── Cards ───────────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: none;
-  border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
-  padding: 32px;
-  margin-bottom: 24px;
-}
-.card-title {
-  font-size: 15px; font-weight: 700;
-  color: var(--text); margin-bottom: 20px;
-}
-
-/* ── Buttons ─────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 6px;
-  font-family: var(--font); font-size: 14px; font-weight: 500;
-  cursor: pointer; border: 1px solid transparent;
-  transition: background .15s, box-shadow .15s, transform .1s;
-}
-.btn:active { transform: scale(.98); }
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent-dk); }
-.btn-primary:hover { background: var(--accent-dk); }
-.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover { background: var(--bg); }
-.btn-danger  { background: #FEF2F2; color: var(--danger); border-color: #FECACA; }
-.btn-danger:hover { background: #FEE2E2; }
-.btn-success { background: #F0FDF4; color: var(--success); border-color: #BBF7D0; }
-.btn-success:hover { background: #DCFCE7; }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-/* ── Input / Search ──────────────────────────────────────────────── */
-.search-row { display: flex; gap: 10px; margin-bottom: 16px; }
-.search-input {
-  flex: 1; padding: 9px 14px;
-  border: 1px solid var(--border); border-radius: 6px;
-  font-family: var(--font); font-size: 14px; color: var(--text);
-  background: var(--surface);
-  transition: border-color .15s, box-shadow .15s;
-}
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(26,86,219,.12);
-}
-
-/* ── Processing checklist ────────────────────────────────────────── */
-.checklist { list-style: none; }
-.check-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 16px; font-weight: 500;
-  color: var(--text-3);
-  transition: color .3s;
-}
-.check-item:last-child { border-bottom: none; }
-.check-item.done { color: var(--success); }
-.check-item.active { color: var(--accent); }
-.check-icon {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
-  transition: all .3s;
-}
-.check-item.done  .check-icon { background: var(--success); border-color: var(--success); color: #fff; }
-.check-item.active .check-icon { border-color: var(--accent); animation: pulse-ring .8s ease infinite; }
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 rgba(26,86,219,.3); }
-  70%  { box-shadow: 0 0 0 8px rgba(26,86,219,0); }
-  100% { box-shadow: 0 0 0 0 rgba(26,86,219,0); }
-}
-.check-sub { font-size: 12px; font-weight: 400; color: var(--text-3); margin-top: 1px; }
-
-/* ── Graph section ───────────────────────────────────────────────── */
-#graph-wrap { display: flex; gap: 16px; height: 580px; }
-#graph-container {
-  flex: 1;
-  border: none; border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
-  background: var(--surface); overflow: hidden;
-  position: relative;
-}
-#side-panel {
-  width: 300px; flex-shrink: 0;
-  display: flex; flex-direction: column; gap: 12px;
-}
-#node-detail {
-  background: var(--surface);
-  border: none; border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(0,0,0,.03), 0 1px 3px rgba(0,0,0,.02);
-  padding: 24px; flex: 1; overflow-y: auto;
-}
-#node-detail h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-.detail-row { display: flex; flex-direction: column; margin-bottom: 12px; }
-.detail-label { font-size: 12px; font-weight: 500; color: var(--text-3); margin-bottom: 2px; }
-.detail-value { font-size: 14px; font-weight: 400; word-break: break-all; }
-
-#graph-legend {
-  position: absolute; bottom: 20px; left: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
-  padding: 12px 16px; z-index: 10;
-  backdrop-filter: blur(4px);
-  min-width: 140px;
-}
-#graph-legend summary {
-  font-size: 13px; font-weight: 600; color: var(--text);
-  cursor: pointer; list-style: none; user-select: none;
-}
-#graph-legend summary::-webkit-details-marker { display: none; }
-.legend-content { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text-2); }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-#graph-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-#graph-status { font-size: 13px; color: var(--text-2); padding: 12px 0; }
-
-/* ── Alerts ──────────────────────────────────────────────────────── */
-.alert-card {
-  background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 20px; margin-bottom: 12px;
-  transition: box-shadow .15s;
-}
-.alert-card:hover { box-shadow: var(--shadow-md); }
-.alert-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-.alert-badge {
-  font-size: 11px; font-weight: 700; padding: 3px 10px;
-  border-radius: 4px; text-transform: uppercase; letter-spacing: .4px;
-  flex-shrink: 0; margin-top: 2px;
-}
-.badge-serial { background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA; }
-.badge-shared { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
-.alert-rule { font-size: 13px; font-weight: 600; color: var(--text); }
-.alert-detail { font-size: 13px; color: var(--text-2); margin-top: 2px; }
-.conf-bar {
-  height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 14px;
-}
-.conf-fill { height: 100%; border-radius: 2px; background: var(--accent);
-             transition: width .4s ease; }
-.alert-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.alert-entities { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.entity-chip {
-  font-size: 11px; font-family: var(--mono);
-  padding: 2px 8px; border-radius: 4px;
-  border: 1px solid var(--border); background: var(--bg);
-  color: var(--text-2);
-}
-.verdict-btn { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;
-               cursor: pointer; border: 1px solid; transition: all .15s; }
-.v-tp { background: #F0FDF4; color: #15803D; border-color: #86EFAC; }
-.v-tp:hover, .v-tp.active { background: #15803D; color: #fff; }
-.v-fp { background: #FEF2F2; color: #B91C1C; border-color: #FCA5A5; }
-.v-fp:hover, .v-fp.active { background: #B91C1C; color: #fff; }
-.v-tn { background: #F5F3FF; color: #6D28D9; border-color: #C4B5FD; }
-.v-tn:hover, .v-tn.active { background: #6D28D9; color: #fff; }
-.v-fn { background: #FFFBEB; color: #B45309; border-color: #FCD34D; }
-.v-fn:hover, .v-fn.active { background: #B45309; color: #fff; }
-.conf-label { font-size: 12px; color: var(--text-2); margin-left: auto; }
-
-/* ── Ledger ──────────────────────────────────────────────────────── */
-.ledger-actions { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
-#verify-result {
-  padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500;
-  display: none;
-}
-.verify-ok  { background: #F0FDF4; color: var(--success); border: 1px solid #BBF7D0; }
-.verify-bad { background: #FEF2F2; color: var(--danger);  border: 1px solid #FECACA; }
-
-.ledger-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.ledger-table th {
-  text-align: left; padding: 8px 12px;
-  border-bottom: 2px solid var(--border);
-  font-size: 11px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .5px; color: var(--text-2);
-}
-.ledger-table td {
-  padding: 10px 12px; border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.ledger-table tr.tampered { background: #FEF2F2; }
-.ledger-table tr:last-child td { border-bottom: none; }
-.hash-cell {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--text-2); word-break: break-all;
-}
-.action-pill {
-  font-size: 11px; font-weight: 600; padding: 2px 8px;
-  border-radius: 4px; background: var(--accent-lt);
-  color: var(--accent); display: inline-block;
-}
-
-/* ── Search results ──────────────────────────────────────────────── */
-.result-list { list-style: none; }
-.result-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
-  cursor: pointer; transition: background .1s;
-}
-.result-item:hover { background: var(--bg); margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
-.result-item:last-child { border-bottom: none; }
-.result-type {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  padding: 2px 7px; border-radius: 3px; flex-shrink: 0;
-}
-.rt-person   { background: #EFF6FF; color: #1D4ED8; }
-.rt-vehicle  { background: #F5F3FF; color: #7C3AED; }
-.rt-account  { background: #F0FDF4; color: #15803D; }
-.rt-phone    { background: #FFF7ED; color: #C2410C; }
-.result-label { font-size: 14px; font-weight: 500; }
-.result-sub   { font-size: 12px; color: var(--text-2); }
-
-/* ── Toast ───────────────────────────────────────────────────────── */
-#toast {
-  position: fixed; bottom: 24px; right: 24px; z-index: 999;
-  background: var(--text); color: #fff;
-  padding: 12px 20px; border-radius: 8px;
-  font-size: 14px; box-shadow: var(--shadow-md);
-  opacity: 0; transition: opacity .3s;
-  pointer-events: none;
-}
-#toast.show { opacity: 1; }
-
-/* ── Spinner ─────────────────────────────────────────────────────── */
-.spin {
-  display: inline-block; width: 16px; height: 16px;
-  border: 2px solid currentColor; border-top-color: transparent;
-  border-radius: 50%; animation: spin .7s linear infinite;
-}
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 5px; border: 1.5px solid var(--ink);
+       background: var(--sheet); color: var(--ink); font-weight: 600; font-size: 14.5px; cursor: pointer; line-height: 1.3; }
+.btn:hover { background: var(--paper); }
+.btn.primary { background: var(--carbon); border-color: var(--carbon); color: #fff; }
+.btn.primary:hover { background: #223C86; }
+.btn.good { border-color: var(--seal); color: var(--seal); }
+.btn.good:hover { background: var(--seal-lt); }
+.btn.bad { border-color: var(--stamp); color: var(--stamp); }
+.btn.bad:hover { background: var(--stamp-lt); }
+.btn.small { padding: 4px 11px; font-size: 13px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 5px; overflow: hidden; }
+.seg button { border: 0; background: var(--sheet); padding: 6px 13px; font-weight: 600; font-size: 13.5px; cursor: pointer; color: var(--ink-2); }
+.seg button + button { border-left: 1.5px solid var(--ink); }
+.seg button.on { background: var(--ink); color: #fff; }
+input.field { font-family: inherit; font-size: 14px; padding: 7px 11px; border: 1.5px solid var(--rule); border-radius: 5px; background: var(--sheet); color: var(--ink); min-width: 0; }
+input.field:focus { border-color: var(--carbon); outline: none; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 12.5px; font-weight: 600; background: var(--paper); color: var(--ink-2); border: 1px solid var(--rule); }
+.tag.hi { background: var(--khaki-lt); border-color: #DCCFA8; color: #6B5B2E; }
+.tag.red { background: var(--stamp-lt); border-color: #F0C3BE; color: var(--stamp); }
+.tag.green { background: var(--seal-lt); border-color: #BFDFCB; color: var(--seal); }
+.tag.blue { background: var(--carbon-lt); border-color: #C9D3EE; color: var(--carbon); }
+table.grid { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.grid th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 13px; padding: 6px 10px; border-bottom: 1.5px solid var(--rule); }
+table.grid td { padding: 7px 10px; border-bottom: 1px solid var(--rule-2); vertical-align: top; }
+.empty { padding: 36px 20px; text-align: center; color: var(--ink-3); }
+#toast { position: fixed; right: 24px; bottom: 24px; max-width: 420px; background: var(--ink); color: #fff; padding: 12px 16px; border-radius: 6px;
+         font-size: 14px; opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s; pointer-events: none; z-index: 99; }
+#toast.show { opacity: 1; transform: none; }
+.spin { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Empty state ─────────────────────────────────────────────────── */
-.empty {
-  text-align: center; padding: 40px 20px;
-  color: var(--text-3); font-size: 14px;
-}
-.empty-icon { font-size: 36px; margin-bottom: 8px; }
+/* ── 1 Sources ─────────────────────────────────────────── */
+#drop { border: 1.5px dashed var(--ink-3); border-radius: 6px; padding: 18px; text-align: center; color: var(--ink-2); cursor: pointer; }
+#drop.over { border-color: var(--carbon); background: var(--carbon-lt); }
+.trace { list-style: none; counter-reset: s; }
+.trace li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--rule-2); }
+.trace li:last-child { border-bottom: 0; }
+.trace .dot { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--rule); display: grid; place-items: center; font-weight: 700; color: var(--ink-3); }
+.trace li.done .dot { background: var(--seal); border-color: var(--seal); color: #fff; }
+.trace li.run .dot { border-color: var(--carbon); color: var(--carbon); }
+.trace .t { font-weight: 700; font-size: 16px; }
+.trace .d { color: var(--ink-2); font-size: 14.5px; }
+.trace li.pending .t, .trace li.pending .d { color: var(--ink-3); }
+.funnel { display: flex; align-items: flex-end; gap: 4px; margin-top: 8px; }
+.funnel div { background: var(--carbon-lt); border: 1px solid #C9D3EE; border-radius: 3px; padding: 3px 8px; font-size: 13px; white-space: nowrap; }
+.funnel div b { font-size: 15px; }
 
-/* ── Responsive ──────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  #graph-wrap { flex-direction: column; height: auto; }
-  #graph-container { height: 400px; }
-  #side-panel { width: 100%; height: auto; }
+/* ── 2 Extraction ──────────────────────────────────────── */
+#ex-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 18px; }
+#fir-list { max-height: 640px; overflow-y: auto; padding: 0; }
+.fir-item { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 14px; border-bottom: 1px solid var(--rule-2); cursor: pointer; }
+.fir-item:hover { background: var(--paper); }
+.fir-item.on { background: var(--carbon-lt); }
+.fir-item .id { font-weight: 600; }
+.fir-item .meta { font-size: 12.5px; color: var(--ink-3); grid-column: 1 / -1; }
+.narr { font-size: 17px; line-height: 1.8; max-width: 72ch; }
+.narr mark { background: none; padding: 1px 2px; border-bottom: 3px solid; border-radius: 2px; }
+.lbl-PHONE { border-color: var(--amber) !important; background: var(--amber-lt) !important; }
+.lbl-VEHICLE { border-color: var(--violet) !important; background: #F1EBF8 !important; }
+.lbl-ACCOUNT { border-color: var(--seal) !important; background: var(--seal-lt) !important; }
+.lbl-IMEI { border-color: #8A4B2B !important; background: #F6E9E1 !important; }
+.lbl-PERSON { border-color: var(--carbon) !important; background: var(--carbon-lt) !important; }
+.lbl-ORG { border-color: var(--khaki) !important; background: var(--khaki-lt) !important; }
+.lbl-LOCATION { border-color: #4F8583 !important; background: #E3EFEE !important; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; color: var(--ink-2); }
+.legend mark { padding: 1px 6px; border-bottom: 3px solid; border-radius: 2px; color: var(--ink); }
+
+/* ── 3 Resolution ──────────────────────────────────────── */
+#gate svg { width: 100%; height: 150px; display: block; }
+.subtabs { display: flex; gap: 22px; border-bottom: 1.5px solid var(--rule); margin: 22px 0 16px; }
+.subtabs button { background: none; border: 0; padding: 8px 0; font-size: 15px; font-weight: 600; color: var(--ink-3); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1.5px; }
+.subtabs button.on { color: var(--ink); border-bottom-color: var(--carbon); }
+.review { display: grid; grid-template-columns: 1fr 340px; gap: 22px; }
+.cmp td:first-child { color: var(--ink-3); width: 150px; font-size: 13.5px; }
+.cmp td.same { background: var(--seal-lt); }
+.cmp td.diff { background: var(--stamp-lt); }
+.cmp th { font-size: 14px !important; color: var(--ink) !important; }
+.factor { display: grid; grid-template-columns: 1fr 64px; gap: 10px; align-items: center; padding: 6px 0; font-size: 14px; border-bottom: 1px solid var(--rule-2); }
+.factor .bar { height: 6px; border-radius: 3px; margin-top: 4px; }
+.factor .pts { text-align: right; font-weight: 700; }
+.factor.neg .pts { color: var(--stamp); }
+.gauge { position: relative; height: 28px; margin: 14px 0 26px; border-radius: 4px;
+         background: linear-gradient(90deg, var(--stamp-lt) 0 40%, var(--amber-lt) 40% 85%, var(--seal-lt) 85% 100%); border: 1px solid var(--rule); }
+.gauge i { position: absolute; top: -5px; bottom: -5px; width: 3px; background: var(--ink); border-radius: 2px; }
+.gauge span { position: absolute; top: 31px; font-size: 12px; color: var(--ink-3); transform: translateX(-50%); }
+.gold { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid var(--rule-2); }
+.gold .name { font-weight: 700; font-size: 16.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.deva { font-size: 1.05em; }
+
+/* ── 4 Network ─────────────────────────────────────────── */
+#net-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+#net-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 16px; height: calc(100vh - 220px); min-height: 560px; }
+#net { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+#net-canvas { flex: 1; position: relative; min-height: 0; }
+#net-caption { position: absolute; left: 14px; top: 10px; z-index: 5; font-size: 13.5px; color: var(--ink-2); background: rgba(255,255,255,.9); padding: 4px 10px; border-radius: 4px; max-width: 70%; }
+#net-legend { border-top: 1px solid var(--rule); padding: 8px 14px; font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--ink-2); }
+#net-legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+#net-legend .ln { display: inline-block; width: 16px; height: 3px; margin-right: 6px; vertical-align: 3px; }
+#net-side { overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+#net-side .panel { padding: 16px 18px; }
+.kp { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--rule-2); cursor: pointer; font-size: 14px; }
+.kp:hover .kp-n { color: var(--carbon); }
+.kp .rank { color: var(--ink-3); font-weight: 700; }
+.kp-n { font-weight: 600; }
+.kp .why { grid-column: 2 / -1; font-size: 12.5px; color: var(--ink-3); margin-top: -3px; }
+.kp .bw { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+dl.facts { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; font-size: 13.5px; }
+dl.facts dt { color: var(--ink-3); }
+dl.facts dd { word-break: break-word; }
+.tl { list-style: none; border-left: 2px solid var(--rule); margin-left: 6px; padding-left: 14px; font-size: 13px; }
+.tl li { position: relative; padding: 3px 0; }
+.tl li::before { content: ''; position: absolute; left: -19px; top: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.tl li.FIR::before { background: var(--khaki); } .tl li.CDR::before { background: var(--amber); } .tl li.BANK::before { background: var(--seal); }
+.hops { list-style: none; font-size: 14px; }
+.hops li { padding: 4px 0; }
+.hops .via { font-size: 12.5px; color: var(--ink-3); padding-left: 18px; }
+
+/* ── 5 Alerts ──────────────────────────────────────────── */
+.alert { display: grid; grid-template-columns: 6px 1fr; gap: 0 18px; padding: 16px 0; border-bottom: 1px solid var(--rule-2); }
+.alert .edge { border-radius: 3px; }
+.alert .title { font-weight: 700; font-size: 16.5px; }
+.alert ul { margin: 6px 0 10px 18px; font-size: 14px; color: var(--ink-2); }
+.conf { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.conf i { display: inline-block; width: 90px; height: 6px; background: var(--rule-2); border-radius: 3px; position: relative; overflow: hidden; }
+.conf i b { position: absolute; inset: 0 auto 0 0; background: var(--ink); }
+.verdict { border: 1.5px solid var(--rule); background: var(--sheet); border-radius: 4px; padding: 3px 10px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--ink-2); }
+.verdict.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip-link { cursor: pointer; }
+.chip-link:hover { border-color: var(--carbon); color: var(--carbon); }
+#cert { position: fixed; inset: 0; background: rgba(28,35,51,.55); z-index: 60; display: grid; place-items: center; padding: 24px; }
+#cert .sheet { background: var(--sheet); width: min(760px, 100%); max-height: 90vh; overflow-y: auto; border-radius: 6px; padding: 30px 34px; border-top: 6px solid var(--khaki); }
+.stampbox { border: 2px solid var(--seal); color: var(--seal); border-radius: 6px; padding: 6px 12px; font-weight: 700; display: inline-block; transform: rotate(-2deg); }
+
+/* ── 6 Evidence chain ──────────────────────────────────── */
+#nodes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.node { background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 6px; padding: 16px 18px; border-top: 5px solid var(--seal); }
+.node.tampered { border-top-color: var(--stamp); background: #FFFBFA; }
+.node.out_of_sync { border-top-color: var(--amber); }
+.node .who { font-weight: 700; font-size: 16px; }
+.node .state { font-weight: 700; font-size: 13.5px; }
+.node.in_consensus .state { color: var(--seal); } .node.tampered .state { color: var(--stamp); } .node.out_of_sync .state { color: var(--amber); }
+.node .errs { margin-top: 8px; font-size: 12.5px; color: var(--stamp); list-style: none; }
+.node .errs li { padding: 2px 0; }
+#consensus { font-size: 15px; margin: 14px 0 20px; }
+#blocks { display: flex; align-items: stretch; overflow-x: auto; padding: 6px 2px 14px; }
+.blk { flex: 0 0 176px; background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 6px; padding: 10px 12px; cursor: pointer; font-size: 12.5px; position: relative; }
+.blk:hover { border-color: var(--ink-3); }
+.blk.on { border-color: var(--carbon); box-shadow: 0 0 0 2px var(--carbon-lt); }
+.blk.bad { border-color: var(--stamp); background: var(--stamp-lt); }
+.blk .h { font-weight: 800; font-size: 17px; }
+.blk .acts { color: var(--ink-2); margin: 2px 0 6px; min-height: 36px; line-height: 1.35; }
+.blk .end { display: flex; gap: 3px; margin-top: 6px; }
+.blk .end i { width: 9px; height: 9px; border-radius: 50%; background: var(--rule); }
+.blk .end i.on { background: var(--seal); }
+.link { flex: 0 0 26px; align-self: center; height: 2px; background: var(--ink-3); position: relative; }
+.link.bad { background: var(--stamp); }
+.link::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: inherit; }
+.merkle { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 10px 0; }
+.merkle .lvl { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.merkle .lvl span { font-family: var(--mono); font-size: 11px; padding: 2px 6px; border-radius: 3px; background: var(--paper); border: 1px solid var(--rule); }
+.merkle .lvl:first-child span { background: var(--khaki-lt); border-color: #DCCFA8; font-weight: 500; }
+pre.cli { background: var(--ink); color: #E6E9F0; font-family: var(--mono); font-size: 13px; padding: 14px 16px; border-radius: 6px; overflow-x: auto; line-height: 1.7; }
+pre.cli .c { color: #8C95A8; }
+
+@media (max-width: 1100px) {
+  #app { grid-template-columns: 1fr; }
+  #rail { position: static; height: auto; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+  #brand { padding: 6px 12px; } #rail-foot { display: none; }
+  .step { width: auto; padding: 6px 12px; border-left: 0; }
+  #net-wrap, .review, #ex-wrap { grid-template-columns: 1fr; height: auto; }
+  #net { height: 520px; }
+  #nodes { grid-template-columns: 1fr; }
+  #top { padding: 12px 16px; flex-wrap: wrap; } #views { padding: 20px 16px 40px; }
 }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
-
 <body>
+<div id="app">
+  <nav id="rail" aria-label="Investigation steps">
+    <div id="brand"><img src="/static/raw_logo.ico" alt="" onerror="this.remove()"><div>Argus<small>Investigation workbench</small></div></div>
+    <button class="step active" data-view="sources"><span class="step-n">1</span><span><span class="step-t">Sources</span><span class="step-s" id="s-sources">Load case data</span></span></button>
+    <button class="step" data-view="extract"><span class="step-n">2</span><span><span class="step-t">Extraction</span><span class="step-s" id="s-extract">Read FIR narratives</span></span></button>
+    <button class="step" data-view="resolve"><span class="step-n">3</span><span><span class="step-t">Entity resolution</span><span class="step-s" id="s-resolve">Who is the same person</span></span></button>
+    <button class="step" data-view="network"><span class="step-n">4</span><span><span class="step-t">Network</span><span class="step-s" id="s-network">Links across cases</span></span></button>
+    <button class="step" data-view="alerts"><span class="step-n">5</span><span><span class="step-t">Alerts</span><span class="step-s" id="s-alerts">Patterns found</span></span></button>
+    <button class="step" data-view="chain"><span class="step-n">6</span><span><span class="step-t">Evidence chain</span><span class="step-s" id="s-chain">Tamper-evident record</span></span></button>
+    <div id="rail-foot">SIH 2026, PS 26189. Runs fully offline: one Python process, SQLite files, no external services.</div>
+  </nav>
 
-<!-- ── Header ──────────────────────────────────────────────────── -->
-<div id="header">
-  <div id="header-inner">
-    <div id="logo">
-      <img src="raw_logo.ico" id="argus-logo" alt="A" onerror="this.style.display='none'">
-      Argus
+  <div id="main">
+    <header id="top">
+      <div><div id="case-title">Lucknow cross-station case review</div><div id="case-sub">8 police stations, June to September 2026</div></div>
+      <div id="seal" role="button" tabindex="0" title="Open the evidence chain">
+        <div id="seal-dots"><i>P</i><i>F</i><i>C</i></div>
+        <div id="seal-text"><b>Checking agencies…</b><span></span></div>
+      </div>
+    </header>
+
+    <div id="views">
+      <!-- 1 SOURCES -->
+      <section class="view active" id="v-sources">
+        <h1>Bring the case files together</h1>
+        <p class="lede">FIRs, call records, bank transactions and the RTO registry usually sit in different departments. Each file is fingerprinted with SHA-256 and sealed on the evidence chain before anything reads it.</p>
+        <div class="row" style="margin-bottom:18px">
+          <button class="btn primary" id="btn-demo">Load the Lucknow demo case</button>
+          <span class="muted">or</span>
+          <div id="drop" tabindex="0" style="flex:1;min-width:260px">Drop CSV or ZIP files here, or click to choose<input type="file" id="file" multiple accept=".csv,.zip" hidden></div>
+        </div>
+        <div class="panel hidden" id="manifest-panel">
+          <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">Source manifest</h2><span id="manifest-block" class="tag green"></span></div>
+          <table class="grid"><thead><tr><th>Source</th><th>File</th><th style="text-align:right">Rows</th><th>SHA-256 fingerprint</th></tr></thead><tbody id="manifest"></tbody></table>
+          <div class="row" style="margin-top:16px"><button class="btn primary" id="btn-run">Run analysis</button><span class="muted" id="run-note">Extraction, resolution, network building and pattern detection, then sealing the results.</span></div>
+        </div>
+        <div class="panel hidden" id="trace-panel" style="margin-top:18px">
+          <h2>What the pipeline did</h2>
+          <ol class="trace" id="trace"></ol>
+        </div>
+      </section>
+
+      <!-- 2 EXTRACTION -->
+      <section class="view" id="v-extract">
+        <h1>Reading the narratives</h1>
+        <p class="lede">Phone numbers, plates and account numbers are pulled out with exact patterns; names, places and organisations with spaCy NER. Hindi FIRs are transliterated so every analyst can read them.</p>
+        <div id="ex-wrap">
+          <div class="panel" style="padding:0">
+            <div style="padding:12px 14px;border-bottom:1px solid var(--rule)"><input class="field" id="fir-filter" placeholder="Filter by FIR, station or language" style="width:100%"></div>
+            <div id="fir-list"><div class="empty">Run the analysis first.</div></div>
+          </div>
+          <div class="panel" id="fir-view"><div class="empty">Pick an FIR to see what was extracted.</div></div>
+        </div>
+      </section>
+
+      <!-- 3 RESOLUTION -->
+      <section class="view" id="v-resolve">
+        <h1>Deciding who is the same person</h1>
+        <p class="lede">A shared phone, IMEI, vehicle or bank account is strong evidence. Names are weak evidence, weighted down when the surname is common. Every scored pair lands in one of three bands, and anything unclear comes to you.</p>
+        <div class="panel" id="gate"><div class="empty">Run the analysis first.</div></div>
+        <div class="subtabs" role="tablist">
+          <button class="on" data-sub="queue">Needs your decision <span id="q-count"></span></button>
+          <button data-sub="golden">Golden records <span id="g-count"></span></button>
+          <button data-sub="pairs">Every scored pair</button>
+        </div>
+        <div id="sub-queue"></div>
+        <div id="sub-golden" class="hidden"></div>
+        <div id="sub-pairs" class="hidden"></div>
+      </section>
+
+      <!-- 4 NETWORK -->
+      <section class="view" id="v-network">
+        <div id="net-bar">
+          <div class="seg" id="net-mode">
+            <button data-mode="persons" class="on">Criminal network</button>
+            <button data-mode="entities">All entities</button>
+            <button data-mode="focus">Focus</button>
+          </div>
+          <div class="seg hidden" id="er-toggle"><button data-res="false">Before resolution</button><button data-res="true" class="on">After resolution</button></div>
+          <div class="row" style="margin-left:auto;gap:8px">
+            <input class="field" id="path-a" list="people" placeholder="From person" style="width:170px">
+            <input class="field" id="path-b" list="people" placeholder="To person" style="width:170px">
+            <button class="btn small" id="btn-path">Find the link</button>
+            <datalist id="people"></datalist>
+          </div>
+        </div>
+        <div id="net-wrap">
+          <div id="net"><div id="net-caption"></div><div id="net-canvas"></div><div id="net-legend"></div></div>
+          <div id="net-side">
+            <div class="panel" id="node-panel"><h3>Details</h3><p class="muted" style="font-size:14px">Click any node. Double-click a person to focus on them.</p></div>
+            <div class="panel"><h3 style="margin-bottom:6px">Key players</h3><p class="muted" style="font-size:12.5px;margin-bottom:6px">Ranked by betweenness: who the network depends on to stay connected.</p><div id="kp"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 ALERTS -->
+      <section class="view" id="v-alerts">
+        <h1>Patterns worth a look</h1>
+        <p class="lede">Each alert lists the evidence behind it so it can be checked and contested. Your verdicts are signed onto the chain and tracked per rule.</p>
+        <div id="fb-stats" class="row" style="margin-bottom:10px"></div>
+        <div class="panel" id="alert-list"><div class="empty">Run the analysis first.</div></div>
+      </section>
+
+      <!-- 6 CHAIN -->
+      <section class="view" id="v-chain">
+        <h1>Evidence chain</h1>
+        <p class="lede">Three agencies each keep their own copy of every audit record. Entries are signed by the officer who made them, blocks are Merkle-sealed and endorsed by every agency. Altering one copy is caught, and the other two out-vote it.</p>
+        <div id="nodes"></div>
+        <div id="consensus"></div>
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Blocks</h2><div class="row"><span class="muted" style="font-size:13px">Showing the copy held by</span><div class="seg" id="copy-seg"></div></div></div>
+        <div id="blocks"></div>
+        <div class="panel" id="block-detail"><div class="empty">Select a block.</div></div>
+        <div class="panel" style="margin-top:18px">
+          <h2>Try to tamper with it</h2>
+          <p style="color:var(--ink-2);margin-bottom:10px;max-width:75ch">These commands edit a node's database file directly, the way an insider with disk access would. The app is not involved. Watch the seal at the top of this page.</p>
+<pre class="cli"><span class="c"># in backend/, with the server still running</span>
+python -m app.chain.tamper --node forensic_lab            <span class="c"># change one record</span>
+python -m app.chain.tamper --node court_registry --rehash <span class="c"># change it and recompute every hash</span>
+python -m app.chain.verify                                <span class="c"># independent audit, no server needed</span>
+python -m app.chain.verify --evidence bundle.json         <span class="c"># prove an exported bundle is authentic</span></pre>
+        </div>
+      </section>
     </div>
-    <nav id="tabs" role="tablist">
-      <button class="tab active" data-tab="input"      role="tab">Input</button>
-      <button class="tab"        data-tab="processing" role="tab">Processing</button>
-      <button class="tab"        data-tab="graph"      role="tab">Graph</button>
-      <button class="tab"        data-tab="alerts"     role="tab">
-        Alerts
-        <span class="tab-badge" id="alert-badge">0</span>
-      </button>
-      <button class="tab"        data-tab="ledger"     role="tab">Ledger</button>
-    </nav>
   </div>
 </div>
-
-<!-- ── Main ────────────────────────────────────────────────────── -->
-<div id="main">
-
-  <!-- ①  INPUT ─────────────────────────────────────────────────── -->
-  <section class="section active" id="sec-input">
-    <div class="card">
-      <div class="card-title">Ingest Data</div>
-      <p style="color:var(--text-2);font-size:14px;margin-bottom:18px;">
-        Upload CSV files or a ZIP archive containing your raw intelligence data (FIRs, CDRs, Bank Transactions, Vehicles).
-      </p>
-      
-      <!-- Drag and drop zone -->
-      <div id="drop-zone" style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; margin-bottom: 16px; background: #fafafa; transition: background 0.2s, border-color 0.2s;" 
-           onclick="document.getElementById('file-upload').click()" 
-           ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-lt)'" 
-           ondragleave="this.style.borderColor='var(--border)'; this.style.background='#fafafa'" 
-           ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='#fafafa'; handleFileUpload(event.dataTransfer.files)">
-        <div style="font-size: 32px; margin-bottom: 12px;">📁</div>
-        <div style="font-size: 15px; font-weight: 500; color: var(--text);">Click to browse or drag and drop files here</div>
-        <div style="font-size: 13px; color: var(--text-2); margin-top: 4px;">Supports .csv and .zip</div>
-        <input type="file" id="file-upload" multiple accept=".csv,.zip" style="display: none;" onchange="handleFileUpload(this.files)" />
-      </div>
-
-      <div id="upload-status" style="font-size:13px;color:var(--text-2);margin-bottom:16px;"></div>
-
-      <button class="btn btn-primary" id="btn-run" onclick="runAnalysis()" style="display: none;">
-        ▶ Run Analysis
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Search Entities</div>
-      <div class="search-row">
-        <input class="search-input" id="search-input" type="text"
-               placeholder="Search name, phone, vehicle reg, account…"
-               oninput="debounceSearch(this.value)" />
-      </div>
-      <ul class="result-list" id="search-results">
-        <li class="empty"><div class="empty-icon">🔍</div>Start typing to search</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ②  PROCESSING ───────────────────────────────────────────── -->
-  <section class="section" id="sec-processing">
-    <div class="card">
-      <div class="card-title">Pipeline Progress</div>
-      <ul class="checklist" id="checklist">
-        <li class="check-item" id="step-ingest">
-          <div class="check-icon">1</div>
-          <div>
-            <div>Ingesting FIR narratives</div>
-            <div class="check-sub">Loading 12 FIR records from argus.db</div>
-          </div>
-        </li>
-        <li class="check-item" id="step-extract">
-          <div class="check-icon">2</div>
-          <div>
-            <div>Extracting entities</div>
-            <div class="check-sub">spaCy NER + regex (phones, vehicles, accounts)</div>
-          </div>
-        </li>
-        <li class="check-item" id="step-resolve">
-          <div class="check-icon">3</div>
-          <div>
-            <div>Resolving identities</div>
-            <div class="check-sub">Cross-FIR deduplication via score_pair() gate</div>
-          </div>
-        </li>
-        <li class="check-item" id="step-graph">
-          <div class="check-icon">4</div>
-          <div>
-            <div>Building knowledge graph</div>
-            <div class="check-sub">NetworkX: Person / Phone / Vehicle / Account nodes</div>
-          </div>
-        </li>
-        <li class="check-item" id="step-done">
-          <div class="check-icon">✓</div>
-          <div>
-            <div>Analysis complete</div>
-            <div class="check-sub" id="step-done-sub">—</div>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div style="text-align:center;margin-top:8px;">
-      <button class="btn btn-secondary" onclick="switchTab('graph')" id="btn-goto-graph" disabled>
-        → View Graph
-      </button>
-    </div>
-  </section>
-
-  <!-- ③  GRAPH ────────────────────────────────────────────────── -->
-  <section class="section" id="sec-graph">
-    <div id="graph-controls">
-      <button class="btn btn-secondary btn-sm" onclick="loadGraph('P-001')">Yadav cluster</button>
-      <button class="btn btn-secondary btn-sm" onclick="loadGraph('PH:9988001122')">Shared phone</button>
-      <button class="btn btn-secondary btn-sm" onclick="resetGraph()">Full graph</button>
-      <span id="graph-status"></span>
-    </div>
-
-    <div id="graph-wrap">
-      <div id="graph-container">
-        <details id="graph-legend">
-          <summary>Legend</summary>
-          <div class="legend-content">
-            <div class="legend-item"><div class="legend-dot" style="background:#DBEAFE; border:1px solid #93C5FD"></div>Person</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#FFEDD5; border:1px solid #FDBA74"></div>📞 Phone</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#DCFCE7; border:1px solid #86EFAC"></div>💳 Account</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#F3E8FF; border:1px solid #D8B4FE"></div>🚗 Vehicle</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#CCFBF1; border:1px solid #5EEAD4"></div>Location</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#FEF9C3; border:1px solid #FDE047"></div>FIR</div>
-            <div style="margin-top:6px;font-size:11px;color:var(--text-3);">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid #FCA5A5"></span> Alert Flag
-            </div>
-          </div>
-        </details>
-      </div>
-      <div id="side-panel">
-        <div id="node-detail">
-          <h3>Node Details</h3>
-          <p style="color:var(--text-3);font-size:13px;">Click any node to see details.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ④  ALERTS ───────────────────────────────────────────────── -->
-  <section class="section" id="sec-alerts">
-    <div id="alerts-list">
-      <div class="empty"><div class="empty-icon">🔔</div>Run the pipeline first (① Input tab)</div>
-    </div>
-  </section>
-
-  <!-- ⑤  LEDGER ───────────────────────────────────────────────── -->
-  <section class="section" id="sec-ledger">
-    <div class="card">
-      <div class="ledger-actions">
-        <button class="btn btn-secondary" onclick="loadLedger()">↻ Refresh</button>
-        <button class="btn btn-success"   onclick="verifyChain()">🔒 Verify Chain</button>
-        <button class="btn btn-danger"    onclick="tamperAndVerify()" id="btn-tamper">⚠ Demo Tamper</button>
-        <div id="verify-result"></div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="ledger-table" id="ledger-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Timestamp</th>
-              <th>Actor</th>
-              <th>Action</th>
-              <th>row_hash</th>
-            </tr>
-          </thead>
-          <tbody id="ledger-body">
-            <tr><td colspan="5" class="empty">Load ledger to view entries</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-</div><!-- /#main -->
-
-<div id="toast"></div>
+<div id="toast" role="status"></div>
+<div id="cert" class="hidden"></div>
 
 <script>
-/* ══════════════════════════════════════════════════════════════════
-   CONSTANTS & STATE
-══════════════════════════════════════════════════════════════════ */
-const API = 'http://localhost:8000';
-let network = null;
-let graphData = { nodes: [], edges: [] };
-let currentAlertId = null;
-
-/* ══════════════════════════════════════════════════════════════════
-   UTILITIES
-══════════════════════════════════════════════════════════════════ */
-function toast(msg, dur = 2800) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
-}
+/* ═══════════════ Utilities ═══════════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = v => v == null ? '' : String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = n => n == null ? '–' : Number(n).toLocaleString('en-IN');
+const short = h => h ? h.slice(0, 10) : '';
+const rupees = n => '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits: 0});
+const DEVA = /[ऀ-ॿ]/;
+const nameHtml = n => DEVA.test(n || '') ? `<span class="deva" lang="hi">${esc(n)}</span>` : esc(n);
+const NODE_LABEL = {police_hq: 'Police HQ', forensic_lab: 'State Forensic Lab', court_registry: 'District Court Registry'};
+const NODE_SHORT = {police_hq: 'P', forensic_lab: 'F', court_registry: 'C'};
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sleep = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
 
 async function api(path, opts = {}) {
-  const r = await fetch(API + path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...opts,
-  });
+  const r = await fetch(path, {headers: {'Content-Type': 'application/json'}, ...opts});
   if (!r.ok) {
-    const err = await r.json().catch(() => ({ detail: r.statusText }));
-    throw new Error(err.detail || r.statusText);
+    const e = await r.json().catch(() => ({detail: r.statusText}));
+    throw new Error(typeof e.detail === 'string' ? e.detail : r.statusText);
   }
   return r.json();
 }
-
-let _searchTimer = null;
-function debounceSearch(v) {
-  clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => doSearch(v), 280);
+let toastTimer;
+function toast(msg, ms = 3200) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === `sec-${name}`));
-  if (name === 'ledger') loadLedger();
-  if (name === 'alerts') loadAlerts();
+/* ═══════════════ Navigation ═══════════════ */
+const loaders = {};
+let current = 'sources';
+function go(view) {
+  current = view;
+  $$('.step').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'v-' + view));
+  loaders[view]?.();
+  window.scrollTo(0, 0);
 }
+$$('.step').forEach(b => b.addEventListener('click', () => go(b.dataset.view)));
+$('#seal').addEventListener('click', () => go('chain'));
+$('#seal').addEventListener('keydown', e => { if (e.key === 'Enter') go('chain'); });
 
-document.querySelectorAll('.tab').forEach(t =>
-  t.addEventListener('click', () => switchTab(t.dataset.tab))
-);
-
-/* ══════════════════════════════════════════════════════════════════
-   ①  INPUT — Load Demo + Search
-══════════════════════════════════════════════════════════════════ */
-async function handleFileUpload(fileList) {
-  if (!fileList || fileList.length === 0) return;
-  const status = document.getElementById('upload-status');
-  const btnRun = document.getElementById('btn-run');
-  
-  status.innerHTML = '<span class="spin"></span> Uploading and ingesting data...';
-  btnRun.style.display = 'none';
-
-  const formData = new FormData();
-  for (let i = 0; i < fileList.length; i++) {
-    formData.append('files', fileList[i]);
+async function refreshRail() {
+  const s = await api('/stats').catch(() => null);
+  if (!s) return;
+  const c = s.counts, run = s.last_run;
+  const set = (id, html, done) => { $('#s-' + id).innerHTML = html; $(`.step[data-view="${id}"]`).classList.toggle('done', !!done); };
+  set('sources', c.fir ? `<b>${num(c.fir)}</b> FIRs, <b>${num(c.cdr)}</b> calls` : 'Load case data', c.fir);
+  if (run) {
+    set('extract', `<b>${num(run.extraction.total_entities)}</b> entities found`, true);
+    set('resolve', c.review_queue ? `<b>${c.review_queue}</b> waiting for you` : `<b>${c.master_entity}</b> golden records`, true);
+    set('network', `<b>${run.graph.communities}</b> groups, ${num(run.graph.nodes)} entities`, true);
+    set('alerts', `<b>${c.alerts}</b> alerts`, true);
   }
+}
 
+/* ═══════════════ Evidence seal (always visible) ═══════════════ */
+let lastChain = null;
+async function refreshSeal() {
+  const st = await api('/chain/status').catch(() => null);
+  if (!st) return;
+  const prev = lastChain; lastChain = st;
+  const c = st.consensus, bad = st.nodes.filter(n => n.state !== 'in_consensus');
+  $('#seal-dots').innerHTML = st.nodes.map(n =>
+    `<i class="${n.state === 'tampered' ? 'bad' : n.state === 'out_of_sync' ? 'lag' : ''}" title="${NODE_LABEL[n.node]}: ${n.state.replace('_', ' ')}">${NODE_SHORT[n.node]}</i>`).join('');
+  const seal = $('#seal');
+  seal.classList.toggle('broken', bad.length > 0);
+  $('#seal-text').innerHTML = bad.length
+    ? `<b>${esc(NODE_LABEL[bad[0].node])} copy ${bad[0].state === 'tampered' ? 'was altered' : 'is out of sync'}</b><span>${c.votes} of ${c.total} agencies agree, block ${st.height}</span>`
+    : `<b>${c.votes} of ${c.total} agencies agree</b><span>Chain intact, block ${st.height}</span>`;
+  $('#s-chain').innerHTML = bad.length ? `<b style="color:#F4A29B">${bad.length} copy altered</b>` : `block <b>${st.height}</b>, all intact`;
+  if (prev && !prev.nodes.some(n => n.state === 'tampered') && st.nodes.some(n => n.state === 'tampered'))
+    toast(`Tampering detected on ${NODE_LABEL[bad[0].node]}: ${bad[0].errors[0] || ''}`, 6000);
+  if (current === 'chain') renderChain(st);
+}
+setInterval(refreshSeal, 3500);
+
+/* ═══════════════ 1 Sources ═══════════════ */
+function showManifest(res) {
+  $('#manifest-panel').classList.remove('hidden');
+  $('#manifest').innerHTML = res.files.map(f => `<tr><td>${esc(f.source)}</td><td>${esc(f.file)}</td>
+    <td style="text-align:right">${num(f.rows)}</td><td class="mono" title="${esc(f.sha256)}">${short(f.sha256)}…${f.sha256.slice(-6)}</td></tr>`).join('');
+  $('#manifest-block').textContent = `Fingerprints sealed in block ${res.block.height}, endorsed by ${res.block.endorsed_by.length} agencies`;
+  $('#trace-panel').classList.add('hidden');
+}
+$('#btn-demo').addEventListener('click', async e => {
+  const b = e.currentTarget; b.disabled = true; b.innerHTML = '<span class="spin"></span> Loading';
+  try { const res = await api('/ingest/demo', {method: 'POST'}); showManifest(res); toast(`Loaded ${res.files.length} source files`); refreshRail(); refreshSeal(); }
+  catch (err) { toast('Could not load the demo case: ' + err.message, 5000); }
+  b.disabled = false; b.textContent = 'Load the Lucknow demo case';
+});
+const drop = $('#drop'), fileIn = $('#file');
+drop.addEventListener('click', () => fileIn.click());
+drop.addEventListener('keydown', e => { if (e.key === 'Enter') fileIn.click(); });
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); upload(e.dataTransfer.files); });
+fileIn.addEventListener('change', () => upload(fileIn.files));
+async function upload(files) {
+  if (!files.length) return;
+  const fd = new FormData(); [...files].forEach(f => fd.append('files', f));
+  drop.innerHTML = '<span class="spin"></span> Fingerprinting and loading…';
   try {
-    const res = await fetch(API + '/ingest', { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
-    
-    let summaryHtml = '<div style="background:var(--success); color:#fff; padding: 6px 12px; border-radius:4px; display:inline-block; margin-bottom:8px;">✓ Upload Successful</div><br/>';
-    summaryHtml += `<b>Ingested Rows:</b><br/>`;
-    for (const [table, count] of Object.entries(data.summary)) {
-      if (count > 0) summaryHtml += `• ${table}: ${count}<br/>`;
+    const r = await fetch('/ingest', {method: 'POST', body: fd});
+    const res = await r.json(); if (!r.ok) throw new Error(res.detail);
+    showManifest(res); toast('Files loaded'); refreshRail(); refreshSeal();
+  } catch (err) { toast('Upload failed: ' + err.message, 5000); }
+  drop.innerHTML = 'Drop CSV or ZIP files here, or click to choose';
+}
+
+$('#btn-run').addEventListener('click', async e => {
+  const b = e.currentTarget; b.disabled = true; b.innerHTML = '<span class="spin"></span> Running';
+  const stages = ['Sources fused', 'Entities extracted', 'Identities resolved', 'Network built', 'Patterns detected', 'Sealed on the evidence chain'];
+  $('#trace-panel').classList.remove('hidden');
+  $('#trace').innerHTML = stages.map((t, i) => `<li class="pending" id="tr-${i}"><span class="dot">${i + 1}</span><div><div class="t">${t}</div><div class="d">Waiting</div></div></li>`).join('');
+  $('#tr-0').className = 'run';
+  try {
+    const r = await api('/process', {method: 'POST'});
+    const s = r.sources, x = r.extraction, v = r.resolution, g = r.graph, a = r.alerts, blk = r.block;
+    const ents = Object.entries(x.entities).sort((p, q) => q[1] - p[1]).map(([k, n]) => `${n} ${k.toLowerCase()}`).join(', ');
+    const rules = Object.entries(a.by_rule).map(([k, n]) => `${n} ${k.replace('_', ' ').toLowerCase()}`).join(', ');
+    const detail = [
+      `${num(s.fir)} FIRs, ${num(s.person)} people named in them, ${num(s.cdr)} call records, ${num(s.bank_txn)} bank transactions and ${num(s.vehicle_reg)} vehicle registrations.`,
+      `${num(x.total_entities)} entities read from ${x.firs} narratives, ${x.languages.hi || 0} of them in Hindi: ${ents}.`,
+      `<div class="funnel"><div><b>${num(v.possible_pairs)}</b> possible pairs</div><div><b>${v.candidate_pairs}</b> compared after blocking</div><div style="background:var(--seal-lt);border-color:#BFDFCB"><b>${v.accepted}</b> merged</div><div style="background:var(--amber-lt);border-color:#EED7AE"><b>${v.review}</b> for you</div><div style="background:var(--stamp-lt);border-color:#F0C3BE"><b>${v.rejected}</b> kept apart</div></div>
+       <div style="margin-top:6px">${v.golden_records} golden records built from ${v.records_merged} FIR records. ${v.victims_excluded} victim records were never compared.</div>`,
+      `${num(g.nodes)} entities and ${num(g.edges)} links from ${Object.keys(g.by_source).length} sources. ${g.suspects_linked} suspects are connected, forming ${g.communities} groups.`,
+      `${a.total} alerts: ${rules}.`,
+      `Block ${blk.height} holds ${blk.seqs.length} signed entries (the run summary, every golden record and every alert), Merkle root <span class="mono">${short(blk.merkle_root)}</span>, endorsed by ${blk.endorsed_by.map(n => NODE_LABEL[n]).join(', ')}.`,
+    ];
+    for (let i = 0; i < stages.length; i++) {
+      const li = $('#tr-' + i); li.className = 'run'; await sleep(350);
+      li.className = 'done'; li.querySelector('.d').innerHTML = detail[i];
     }
-    status.innerHTML = summaryHtml;
-    btnRun.style.display = 'inline-flex';
-    toast('Data ingested successfully');
-  } catch(e) {
-    status.innerHTML = `<span style="color:var(--danger)">Error: ${escHtml(e.message)}</span>`;
-    toast('Upload failed', 4000);
+    toast(`Analysis complete: ${v.review} resolution decisions are waiting for you`);
+    refreshRail(); refreshSeal(); loadedNet = null;
+  } catch (err) { toast('Analysis failed: ' + err.message, 6000); }
+  b.disabled = false; b.textContent = 'Run analysis again';
+});
+
+/* ═══════════════ 2 Extraction ═══════════════ */
+let firs = [];
+loaders.extract = async () => {
+  const r = await api('/extract').catch(() => ({firs: []}));
+  firs = r.firs.filter(f => f.lang);
+  renderFirList();
+  if (firs.length && !$('.fir-item.on')) showFir(firs[0].id);
+};
+function renderFirList() {
+  const q = $('#fir-filter').value.toLowerCase();
+  const list = firs.filter(f => !q || `${f.id} ${f.station} ${f.lang === 'hi' ? 'hindi' : 'english'}`.toLowerCase().includes(q));
+  $('#fir-list').innerHTML = list.length ? list.map(f => `<div class="fir-item" data-fir="${esc(f.id)}"><span class="id">${esc(f.id)}</span>
+      <span>${f.lang === 'hi' ? '<span class="tag hi">हिन्दी</span>' : ''} <span class="tag">${f.n_entities}</span></span>
+      <span class="meta">${esc(f.station)}, ${esc(f.date)}, ${esc(f.section)}</span></div>`).join('')
+    : '<div class="empty">Run the analysis first.</div>';
+}
+$('#fir-filter').addEventListener('input', renderFirList);
+$('#fir-list').addEventListener('click', e => { const it = e.target.closest('.fir-item'); if (it) showFir(it.dataset.fir); });
+async function showFir(id) {
+  $$('.fir-item').forEach(x => x.classList.toggle('on', x.dataset.fir === id));
+  const f = await api('/extract/' + encodeURIComponent(id));
+  let html = '', pos = 0;
+  for (const s of f.spans) {
+    if (s.start < pos) continue;
+    html += esc(f.narrative.slice(pos, s.start)) + `<mark class="lbl-${s.label}" title="${s.label} (found by ${s.source})">${esc(f.narrative.slice(s.start, s.end))}</mark>`;
+    pos = s.end;
   }
+  html += esc(f.narrative.slice(pos));
+  const by = {}; f.spans.forEach(s => (by[s.label] = by[s.label] || []).push(s));
+  const srcName = {regex: 'exact pattern', spacy: 'spaCy NER', record: 'FIR person record'};
+  $('#fir-view').innerHTML = `<div class="row" style="justify-content:space-between"><div><h2 style="margin:0">${esc(f.id)}</h2>
+      <div class="muted">${esc(f.station)}, registered ${esc(f.date)} under ${esc(f.section)}</div></div>${f.lang === 'hi' ? '<span class="tag hi">Hindi narrative</span>' : ''}</div>
+    <div class="legend" style="margin:14px 0">${Object.keys(by).map(l => `<mark class="lbl-${l}">${l.charAt(0) + l.slice(1).toLowerCase()} (${by[l].length})</mark>`).join('')}</div>
+    <p class="narr" lang="${f.lang}">${html}</p>
+    ${f.transliteration ? `<h3 style="margin-top:18px">Transliteration</h3><p style="color:var(--ink-2);max-width:72ch">${esc(f.transliteration)}</p>` : ''}
+    <h3 style="margin-top:20px;margin-bottom:6px">Extracted entities</h3>
+    <table class="grid"><thead><tr><th>Type</th><th>Value</th><th>Found by</th></tr></thead><tbody>
+    ${f.spans.map(s => `<tr><td>${s.label.charAt(0) + s.label.slice(1).toLowerCase()}</td><td>${nameHtml(s.text)}</td><td class="muted">${srcName[s.source] || s.source}</td></tr>`).join('')}</tbody></table>`;
 }
 
-async function runAnalysis() {
-  const btn = document.getElementById('btn-run');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Running...';
+/* ═══════════════ 3 Resolution ═══════════════ */
+let pairs = [];
+const DEC_COLOR = {accept: '#2D7A4E', human_accept: '#2D7A4E', transitive: '#6FA784', review: '#B8741A', review_grouped: '#D9A55A', reject: '#B3261E', human_reject: '#B3261E'};
+const DEC_TEXT = {accept: 'merged automatically', human_accept: 'merged by analyst', transitive: 'merged via another match', review: 'waiting for you', review_grouped: 'waiting for you (same question)', reject: 'kept apart', human_reject: 'kept apart by analyst'};
+loaders.resolve = async () => {
+  const [p, q, g, st] = await Promise.all([api('/resolution/pairs'), api('/review-queue'), api('/resolution/golden'), api('/stats')]).catch(() => [null]);
+  if (!p || !st.last_run) return;
+  pairs = p.pairs;
+  drawGate(st.last_run.resolution);
+  $('#q-count').textContent = `(${q.count})`; $('#g-count').textContent = `(${g.count})`;
+  renderQueue(q.queue); renderGolden(g.golden); renderPairs();
+};
+$$('.subtabs button').forEach(b => b.addEventListener('click', () => {
+  $$('.subtabs button').forEach(x => x.classList.toggle('on', x === b));
+  ['queue', 'golden', 'pairs'].forEach(k => $('#sub-' + k).classList.toggle('hidden', k !== b.dataset.sub));
+}));
 
-  switchTab('processing');
-  await animateChecklist();
-
-  btn.disabled = false;
-  btn.innerHTML = '▶ Run Analysis';
+function drawGate(r) {
+  const W = 1000, H = 150, x = s => 30 + s * (W - 60);
+  const band = {low: pairs.filter(p => p.score <= .4).length, mid: pairs.filter(p => p.score > .4 && p.score < .85).length, high: pairs.filter(p => p.score >= .85).length};
+  const dots = pairs.map((p, i) => {
+    const y = 40 + ((i * 37) % 70);
+    return `<circle cx="${x(p.score)}" cy="${y}" r="7" fill="${DEC_COLOR[p.decision]}" fill-opacity=".85" stroke="#fff" stroke-width="1.5" data-pair="${p.id}" style="cursor:pointer"><title>${esc(p.latin_a)} ~ ${esc(p.latin_b)}: ${p.score.toFixed(2)}, ${DEC_TEXT[p.decision]}</title></circle>`;
+  }).join('');
+  $('#gate').innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:4px"><h2 style="margin:0">The resolution gate</h2>
+    <span class="muted" style="font-size:14px">${r.records} suspect and witness records. ${num(r.possible_pairs)} possible pairs, blocking cut that to ${r.candidate_pairs} worth scoring (${(100 - r.candidate_pairs / r.possible_pairs * 100).toFixed(1)}% of comparisons skipped).</span></div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Scored pairs on the 0 to 1 match scale">
+      <rect x="${x(0)}" y="28" width="${x(.4) - x(0)}" height="92" fill="#FBE9E7"/><rect x="${x(.4)}" y="28" width="${x(.85) - x(.4)}" height="92" fill="#FBF0DE"/><rect x="${x(.85)}" y="28" width="${x(1) - x(.85)}" height="92" fill="#E3F1E8"/>
+      <text x="${x(.2)}" y="20" text-anchor="middle" font-size="14" fill="#B3261E" font-weight="700">Kept apart (${band.low})</text>
+      <text x="${x(.625)}" y="20" text-anchor="middle" font-size="14" fill="#8A5610" font-weight="700">Human review (${band.mid})</text>
+      <text x="${x(.925)}" y="20" text-anchor="middle" font-size="14" fill="#2D7A4E" font-weight="700">Merged automatically (${band.high})</text>
+      <line x1="${x(.4)}" x2="${x(.4)}" y1="24" y2="124" stroke="#1C2333" stroke-width="2"/><line x1="${x(.85)}" x2="${x(.85)}" y1="24" y2="124" stroke="#1C2333" stroke-width="2"/>
+      <text x="${x(.4)}" y="142" text-anchor="middle" font-size="13" fill="#4A5263">0.40</text><text x="${x(.85)}" y="142" text-anchor="middle" font-size="13" fill="#4A5263">0.85</text>
+      <text x="${x(0)}" y="142" font-size="13" fill="#7C8393">0</text><text x="${x(1)}" y="142" text-anchor="end" font-size="13" fill="#7C8393">1.0</text>${dots}</svg>
+    <p class="muted" style="font-size:13px">Each dot is one pair of records. Click a dot to see why it scored where it did.</p><div id="gate-detail"></div>`;
+  $('#gate svg').addEventListener('click', e => { const id = e.target.dataset?.pair; if (id) showPair(+id); });
 }
-
-async function animateChecklist() {
-  const steps = ['ingest','extract','resolve','graph','done'];
-  const delays = [400, 600, 800, 600, 400];
-
-  function setStep(id, state) {
-    const el = document.getElementById(`step-${id}`);
-    el.classList.remove('done','active');
-    if (state) el.classList.add(state);
-  }
-
-  // Reset all
-  steps.forEach(s => setStep(s, ''));
-  document.getElementById('btn-goto-graph').disabled = true;
-
-  try {
-    // Step 1: ingest (local, instant)
-    setStep('ingest', 'active');
-    await sleep(delays[0]);
-    setStep('ingest', 'done');
-
-    // Step 2: extract
-    setStep('extract', 'active');
-    await sleep(delays[1]);
-
-    // Step 3: resolve — fire the API call here
-    setStep('extract', 'done');
-    setStep('resolve', 'active');
-
-    const result = await api('/process', { method: 'POST', body: '{}' });
-
-    setStep('resolve', 'done');
-    await sleep(delays[2]);
-
-    // Step 4: graph build
-    setStep('graph', 'active');
-    await sleep(delays[3]);
-    setStep('graph', 'done');
-
-    // Step 5: done
-    setStep('done', 'active');
-    await sleep(delays[4]);
-    setStep('done', 'done');
-
-    document.getElementById('step-done-sub').textContent =
-      `${result.extracted_firs} FIRs · ${result.resolution.accepted} merges · ${result.alerts_generated} alerts`;
-
-    document.getElementById('btn-goto-graph').disabled = false;
-
-    // Update alert badge
-    const badge = document.getElementById('alert-badge');
-    badge.textContent = result.alerts_generated;
-    badge.classList.toggle('visible', result.alerts_generated > 0);
-
-    toast(`Pipeline complete — ${result.alerts_generated} alerts generated`);
-
-    // Pre-load graph
-    await loadGraph('P-001');
-
-  } catch(e) {
-    toast('Error: ' + e.message, 4000);
-    steps.forEach(s => setStep(s, ''));
-    throw e;
-  }
+function showPair(id) {
+  const p = pairs.find(x => x.id === id); if (!p) return;
+  $('#gate-detail').innerHTML = `<div style="border-top:1px solid var(--rule);margin-top:10px;padding-top:12px">
+    <h3>${nameHtml(p.name_a)} <span class="muted">(${p.a})</span> and ${nameHtml(p.name_b)} <span class="muted">(${p.b})</span></h3>
+    <div class="muted" style="font-size:13.5px;margin-bottom:6px">Score ${p.score.toFixed(3)}, ${DEC_TEXT[p.decision]}. Compared because they share ${p.blocks.map(blockText).join(' and ')}.</div>
+    ${factorsHtml(p.evidence.factors)}</div>`;
 }
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function doSearch(q) {
-  const ul = document.getElementById('search-results');
-  if (!q.trim()) {
-    ul.innerHTML = '<li class="empty"><div class="empty-icon">🔍</div>Start typing to search</li>';
-    return;
-  }
-  try {
-    const data = await api(`/entities?q=${encodeURIComponent(q)}`);
-    if (!data.results.length) {
-      ul.innerHTML = '<li class="empty"><div class="empty-icon">🤷</div>No results</li>';
-      return;
-    }
-    ul.innerHTML = data.results.map(r => {
-      const typeClass = { Person:'rt-person', Vehicle:'rt-vehicle', Account:'rt-account', Phone:'rt-phone' }[r.type] || 'rt-person';
-      const sub = [r.phone, r.address, r.owner, r.holder, r.fir_id].filter(Boolean).join(' · ');
-      return `<li class="result-item" onclick="viewEntity('${escHtml(r.id)}')">
-        <span class="result-type ${typeClass}">${r.type}</span>
-        <div>
-          <div class="result-label">${escHtml(r.label)}</div>
-          ${sub ? `<div class="result-sub">${escHtml(sub)}</div>` : ''}
-        </div>
-      </li>`;
+function blockText(key) {
+  const [kind, val] = key.split(/:(.*)/);
+  return kind === 'name' ? 'a similar-sounding name' : `the same ${kind.replace('_no', '')} (${esc(val)})`;
+}
+function factorsHtml(factors) {
+  return factors.map(f => { const neg = f.points < 0, w = Math.min(Math.abs(f.points) / 0.6 * 100, 100);
+    const col = neg ? 'var(--stamp)' : f.kind === 'strong' ? 'var(--seal)' : f.kind === 'name' ? 'var(--carbon)' : 'var(--khaki)';
+    return `<div class="factor ${neg ? 'neg' : ''}"><div>${esc(f.label)}<div class="bar" style="width:${w}%;background:${col}"></div></div><div class="pts">${neg ? '' : '+'}${f.points.toFixed(2)}</div></div>`; }).join('');
+}
+function gaugeHtml(score) {
+  return `<div class="gauge"><i style="left:calc(${score * 100}% - 1.5px)"></i><span style="left:40%">0.40</span><span style="left:85%">0.85</span><span style="left:${score * 100}%;top:-20px;color:var(--ink);font-weight:700;font-size:13px">${score.toFixed(3)}</span></div>`;
+}
+const FIELDS = [['name', 'Name'], ['alias', 'Alias'], ['father_name', 'Father / husband'], ['age', 'Age'], ['address', 'Address'], ['phone', 'Phone'], ['imei', 'IMEI'], ['vehicle', 'Vehicle'], ['account_no', 'Bank account']];
+function renderQueue(queue) {
+  if (!queue.length) { $('#sub-queue').innerHTML = '<div class="panel empty">Nothing waiting. Every uncertain pair has a decision.</div>'; return; }
+  $('#sub-queue').innerHTML = queue.map(q => {
+    const rows = FIELDS.map(([k, label]) => {
+      const a = q.a[k] || '', b = q.b[k] || '';
+      const strong = ['phone', 'imei', 'vehicle', 'account_no'].includes(k);
+      const cls = a && b ? (a === b ? 'same' : (strong || k === 'father_name' ? 'diff' : '')) : '';
+      if (!a && !b) return '';
+      return `<tr><td>${label}</td><td class="${cls}">${nameHtml(a) || '<span class="muted">not recorded</span>'}</td><td class="${cls}">${nameHtml(b) || '<span class="muted">not recorded</span>'}</td></tr>`;
     }).join('');
-  } catch(e) {
-    ul.innerHTML = `<li class="empty">Error: ${escHtml(e.message)}</li>`;
-  }
+    const ctx = (g, r) => g ? `<div class="muted" style="font-size:12.5px">already part of ${esc(g.canonical)} (${g.n_records} records)</div>` : '';
+    return `<div class="panel review" style="margin-bottom:16px" id="rq-${q.id}">
+      <div><h2>Is this the same person?</h2>
+        <table class="grid cmp"><thead><tr><th></th><th>${esc(q.a.id)}, ${esc(q.a.fir_id)}<div class="muted" style="font-weight:400;font-size:12.5px">${esc(q.a.station)}, ${esc(q.a.date)}, ${esc(q.a.role.toLowerCase())}</div>${ctx(q.a_golden)}</th>
+          <th>${esc(q.b.id)}, ${esc(q.b.fir_id)}<div class="muted" style="font-weight:400;font-size:12.5px">${esc(q.b.station)}, ${esc(q.b.date)}, ${esc(q.b.role.toLowerCase())}</div>${ctx(q.b_golden)}</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div><h3>Why the machine is unsure</h3>${gaugeHtml(q.score)}${factorsHtml(q.evidence.factors)}
+        <div class="row" style="margin-top:16px"><button class="btn good" data-rev="${q.id}" data-d="accept">Same person, merge</button><button class="btn bad" data-rev="${q.id}" data-d="reject">Different people</button></div>
+        <p class="muted" style="font-size:12.5px;margin-top:8px">Your decision is signed with your key, sealed on the chain, and replayed on every future run.</p></div></div>`;
+  }).join('');
 }
-
-function viewEntity(id) {
-  switchTab('graph');
-  loadGraph(id);
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ③  GRAPH
-══════════════════════════════════════════════════════════════════ */
-async function loadGraph(masterId = 'P-001', hops = 2) {
-  const status = document.getElementById('graph-status');
-  status.innerHTML = '<span class="spin"></span> Loading…';
+$('#sub-queue').addEventListener('click', async e => {
+  const b = e.target.closest('[data-rev]'); if (!b) return;
+  const card = $('#rq-' + b.dataset.rev); card.querySelectorAll('button').forEach(x => x.disabled = true);
   try {
-    const data = await api(`/graph/${encodeURIComponent(masterId)}?hops=${hops}`);
+    const r = await api(`/review/${b.dataset.rev}`, {method: 'POST', body: JSON.stringify({decision: b.dataset.d, actor: 'analyst'})});
+    toast(`${r.decision === 'accept' ? 'Merged' : 'Kept apart'}. Signed as entry #${r.ledger_id} in block ${r.block.height}, endorsed by ${r.block.endorsed_by.length} agencies.`, 4500);
+    card.style.opacity = .35; await sleep(400); loadedNet = null;
+    await loaders.resolve(); refreshRail(); refreshSeal();
+  } catch (err) { toast('Decision failed: ' + err.message, 5000); card.querySelectorAll('button').forEach(x => x.disabled = false); }
+});
+function renderGolden(list) {
+  if (!list.length) { $('#sub-golden').innerHTML = '<div class="panel empty">No merged identities yet.</div>'; return; }
+  $('#sub-golden').innerHTML = `<div class="panel">${list.map(g => `<div class="gold"><div>
+      <div class="name">${esc(g.canonical)} <span class="tag blue">${g.n_records} records</span> ${g.human_confirmed ? '<span class="tag green">confirmed by analyst</span>' : ''}</div>
+      <div class="chips">${g.names.map(n => `<span class="tag ${DEVA.test(n) ? 'hi' : ''}">${nameHtml(n)}</span>`).join('')}</div>
+      <div class="muted" style="font-size:13.5px;margin-top:6px">${g.stations.join(', ')}. ${Object.entries(g.identifiers).filter(([, v]) => v.length).map(([k, v]) => `${k.replace('_no', '')} ${v.join(', ')}`).join('; ')}</div></div>
+      <div><button class="btn small" data-focus="${esc(g.master_id)}">Before and after</button></div></div>`).join('')}</div>`;
+}
+$('#sub-golden').addEventListener('click', e => { const b = e.target.closest('[data-focus]'); if (b) { go('network'); focusOn(b.dataset.focus, false); } });
+function renderPairs() {
+  $('#sub-pairs').innerHTML = `<div class="panel"><table class="grid"><thead><tr><th>Record A</th><th>Record B</th><th>Score</th><th>Outcome</th><th>Strongest evidence</th></tr></thead><tbody>
+    ${pairs.map(p => `<tr style="cursor:pointer" data-p="${p.id}"><td>${nameHtml(p.name_a)} <span class="muted">${p.a}</span></td><td>${nameHtml(p.name_b)} <span class="muted">${p.b}</span></td>
+      <td class="mono">${p.score.toFixed(3)}</td><td><span style="color:${DEC_COLOR[p.decision]};font-weight:600">${DEC_TEXT[p.decision]}</span></td>
+      <td class="muted" style="font-size:13px">${esc((p.evidence.factors[0] || {}).label || '')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+$('#sub-pairs').addEventListener('click', e => { const tr = e.target.closest('[data-p]'); if (tr) { showPair(+tr.dataset.p); $('#gate').scrollIntoView({behavior: reduced ? 'auto' : 'smooth'}); } });
 
-    // Filter out orphan OWNER: nodes added by graphstore
-    const nodes = data.nodes.filter(n => !n.id.startsWith('OWNER:'));
-    const nodeIds = new Set(nodes.map(n => n.id));
-    const edges = data.edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to));
+/* ═══════════════ 4 Network ═══════════════ */
+const TYPE = {
+  Person:   {color: '#2B4AA0', shape: 'dot', size: 17},
+  Phone:    {color: '#B8741A', shape: 'dot', size: 9},
+  Account:  {color: '#2D7A4E', shape: 'diamond', size: 11},
+  Vehicle:  {color: '#6F4C9B', shape: 'square', size: 10},
+  Location: {color: '#4F8583', shape: 'triangle', size: 11},
+  FIR:      {color: '#9A8756', shape: 'hexagon', size: 10},
+  Summary:  {color: '#A2A8B3', shape: 'dot', size: 10},
+};
+const SRC = {FIR: '#9A8756', CDR: '#B8741A', BANK: '#2D7A4E', RTO: '#6F4C9B', FUSED: '#5B6478'};
+const COMM = ['#2B4AA0', '#1F7A8C', '#2D7A4E', '#6F4C9B', '#B8741A', '#8A4B2B', '#5B6478', '#9A8756', '#3F6FB5', '#7A8F3A'];
+let network = null, nodesDS = null, edgesDS = null, loadedNet = null, netMode = 'persons', focusId = null, resolvedView = true, peopleMap = {};
 
-    // Deduplicate parallel CDR edges (show only first per src-dst pair for clarity)
-    const edgeSeen = new Set();
-    const dedupEdges = edges.filter(e => {
-      const key = `${e.from}→${e.to}→${e.label}`;
-      if (edgeSeen.has(key) && e.label === 'CALLED') return false;
-      edgeSeen.add(key);
-      return true;
-    });
-
-    // Enhance node visuals
-    const visNodes = nodes.map(n => {
-      const isSummary = n.group === 'Summary';
-      const labelPrefix = (n.group === 'Phone' ? '📞 ' : (n.group === 'Vehicle' ? '🚗 ' : (n.group === 'Account' ? '💳 ' : '')));
-      
-      const nodeProps = {
-        ...n,
-        label: (isSummary ? '' : labelPrefix) + (n.label || n.id),
-        shape: isSummary ? 'ellipse' : 'dot',
-        size: isSummary ? 14 : (n.group === 'Person' ? 18 : 14),
-        font: { size: 11, face: 'Inter, sans-serif', color: isSummary ? '#6B7280' : '#374151', strokeWidth: 2, strokeColor: '#ffffff' },
-        borderWidth: n.alert ? 2 : 1,
-        color: {
-          background: isSummary ? '#F3F4F6' : (n.color?.background || '#F3F4F6'),
-          border: n.alert ? '#FCA5A5' : (isSummary ? '#D1D5DB' : (n.color?.border || '#D1D5DB')),
-          highlight: { 
-            border: n.alert ? '#EF4444' : '#6B7280', 
-            background: isSummary ? '#E5E7EB' : (n.color?.background || '#E5E7EB')
-          }
-        },
-        shadow: { enabled: true, size: 4, x: 2, y: 2, color: 'rgba(0,0,0,.04)' },
-      };
-      
-      if (isSummary) {
-        nodeProps.shapeProperties = { borderDashes: [4, 4] };
-      } else if (n.shapeProperties) {
-        nodeProps.shapeProperties = n.shapeProperties;
-      }
-      
-      return nodeProps;
-    });
-
-    const visEdges = dedupEdges.map(e => ({
-      ...e,
-      fullLabel: e.label,
-      label: '',
-      width: e.label === 'SAME_AS' ? 3 : 1.5,
-      dashes: e.label === 'SAME_AS',
-      font: { size: 10, face: 'Inter', color: '#6B7280', strokeWidth: 0 },
-      smooth: { type: 'continuous' },
-    }));
-
-    graphData = { nodes: new vis.DataSet(visNodes), edges: new vis.DataSet(visEdges) };
-
-    if (!network) {
-      network = new vis.Network(
-        document.getElementById('graph-container'),
-        graphData,
-        visOptions()
-      );
-      network.on('click', onNodeClick);
-      
-      // Edge label fade in on hover/selection
-      network.on('hoverEdge', function(e) {
-        const edge = graphData.edges.get(e.edge);
-        if (edge && edge.fullLabel) graphData.edges.update({ id: e.edge, label: edge.fullLabel });
-      });
-      network.on('blurEdge', function(e) {
-        if (!network.getSelection().edges.includes(e.edge)) {
-          graphData.edges.update({ id: e.edge, label: '' });
-        }
-      });
-      network.on('selectEdge', function(e) {
-        e.edges.forEach(id => {
-          const edge = graphData.edges.get(id);
-          if (edge && edge.fullLabel) graphData.edges.update({ id, label: edge.fullLabel });
-        });
-      });
-      network.on('deselectEdge', function(e) {
-        e.previousSelection.edges.forEach(id => graphData.edges.update({ id, label: '' }));
-      });
-    } else {
-      network.setData(graphData);
-    }
-
-    status.textContent = `${nodes.length} nodes · ${visEdges.length} edges · hops=${hops}`;
-
-  } catch(e) {
-    status.textContent = 'Error: ' + e.message;
-    toast('Graph error: ' + e.message, 4000);
-  }
+loaders.network = async () => {
+  if (loadedNet) return;
+  loadedNet = true;
+  const kp = await api('/analytics/key-players').catch(() => ({key_players: []}));
+  $('#kp').innerHTML = kp.key_players.length ? kp.key_players.map((k, i) => `<div class="kp" data-id="${esc(k.id)}"><span class="rank">${i + 1}</span><span class="kp-n">${esc(k.label)}</span>
+      <span class="bw">${k.betweenness.toFixed(3)}</span><span class="why">${esc(k.reason)}${k.records > 1 ? `, ${k.records} FIR records` : ''}</span></div>`).join('') : '<p class="muted">Run the analysis first.</p>';
+  if (netMode === 'focus' && focusId) focusOn(focusId, resolvedView); else loadOverview(netMode);
+};
+$('#kp').addEventListener('click', e => { const k = e.target.closest('.kp'); if (k) focusOn(k.dataset.id, true); });
+$$('#net-mode button').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.mode === 'focus') { if (focusId) focusOn(focusId, resolvedView); else toast('Double-click a person, or pick a key player, to focus on them'); return; }
+  loadOverview(b.dataset.mode);
+}));
+$$('#er-toggle button').forEach(b => b.addEventListener('click', () => focusOn(focusId, b.dataset.res === 'true')));
+function setMode(mode) {
+  netMode = mode;
+  $$('#net-mode button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  $('#er-toggle').classList.toggle('hidden', mode !== 'focus');
 }
 
-function resetGraph() { loadGraph('P-001'); }
-
-function nodeShape(type) {
-  return 'dot';
-}
-
-function visOptions() {
+function visNode(n, colourBy) {
+  const t = TYPE[n.type] || TYPE.Summary;
+  let color = colourBy === 'community' && n.community != null ? COMM[n.community % COMM.length] : t.color;
+  if (n.protected) color = '#B9BEC7';
+  let size = t.size;
+  if (n.type === 'Person') size = 14 + Math.min((n.records || []).length, 5) * 3 + (n.centrality ? n.centrality * 60 : 0);
+  if (colourBy === 'community' && n.type !== 'Person') size = t.size * 0.8;
+  const nrec = (n.records || []).length;
+  let label = n.type === 'Summary' ? n.label : n.type === 'Person' ? n.label + (nrec > 1 ? `\n${nrec} records` : '') : (n.protected ? '🔒 ' : '') + n.label;
+  if (n.type === 'Location') label = n.label;
+  if (n.owner && (n.type === 'Phone' || n.type === 'Account') && n.level != null) label += `
+${n.owner}`;
   return {
-    physics: {
-      enabled: true,
-      barnesHut: { gravitationalConstant: -4000, springLength: 120, springConstant: 0.04 },
-      stabilization: { iterations: 120 },
-    },
-    interaction: { hover: true, tooltipDelay: 150, navigationButtons: true, hoverConnectedEdges: false },
-    nodes: { borderWidthSelected: 3 },
-    edges: { selectionWidth: 2.5 },
-    layout: { improvedLayout: true },
+    id: n.id, raw: n, label, shape: t.shape, size, ...(n.level != null ? {level: n.level} : {}),
+    color: {background: color, border: n.alert ? '#B3261E' : n.in_review ? '#B8741A' : '#FFFFFF', highlight: {background: color, border: '#1C2333'}, hover: {background: color, border: '#1C2333'}},
+    borderWidth: n.alert || n.in_review ? 4 : 1.5,
+    font: {face: 'Mukta', size: n.type === 'Person' ? 15 : 12, color: '#1C2333', strokeWidth: 4, strokeColor: '#ffffff', multi: false},
+    title: tooltip(n),
   };
 }
-
-function onNodeClick(params) {
-  if (!params.nodes.length) return;
-  const nodeId  = params.nodes[0];
-  const nodeData = graphData.nodes.get(nodeId);
-  if (!nodeData) return;
-
-  if (nodeData.group === 'Summary') {
-    const children = nodeData.children || [];
-    
-    // Remove summary node (vis.js auto-removes attached edges)
-    graphData.nodes.remove(nodeId);
-    
-    const newNodes = [];
-    const newEdges = [];
-    
-    for (const child of children) {
-      const labelPrefix = (child.node.type === 'Phone' || child.node.group === 'Phone' ? '📞 ' : (child.node.type === 'Vehicle' || child.node.group === 'Vehicle' ? '🚗 ' : (child.node.type === 'Account' || child.node.group === 'Account' ? '💳 ' : '')));
-      newNodes.push({
-        ...child.node,
-        id: child.node.id,
-        group: child.node.type || child.node.group,
-        label: labelPrefix + (child.node.label || child.node.id),
-        shape: 'dot',
-        size: 14,
-        font: { size: 11, face: 'Inter, sans-serif', color: '#374151', strokeWidth: 2, strokeColor: '#ffffff' },
-        borderWidth: child.node.alert ? 2 : 1,
-        color: {
-          background: child.node.color?.background || '#F3F4F6',
-          border: child.node.alert ? '#FCA5A5' : (child.node.color?.border || '#D1D5DB'),
-          highlight: { 
-            border: child.node.alert ? '#EF4444' : '#6B7280', 
-            background: child.node.color?.background || '#E5E7EB'
-          }
-        },
-        shadow: { enabled: true, size: 4, x: 2, y: 2, color: 'rgba(0,0,0,.04)' }
-      });
-      newEdges.push({
-        ...child.edge,
-        id: child.edge.id || `expanded-${child.edge.from}-${child.edge.to}-${Date.now()}`,
-        fullLabel: child.edge.label,
-        label: '',
-        width: 1.5,
-        font: { size: 10, face: 'Inter', color: '#6B7280', strokeWidth: 0 },
-        smooth: { type: 'continuous' }
-      });
+function tooltip(n) {
+  const d = document.createElement('div'); d.style.cssText = 'font-family:Mukta;font-size:13px;max-width:260px';
+  const bits = [`<b>${esc(n.label)}</b> <span style="color:#7C8393">${n.type}</span>`];
+  if (n.role) bits.push(n.role.toLowerCase());
+  if (n.aka && n.aka.length) bits.push('Also recorded as ' + n.aka.map(esc).join(', '));
+  if (n.stations) bits.push(n.stations.join(', '));
+  if (n.holder) bits.push('Holder: ' + esc(n.holder));
+  if (n.make) bits.push(`${esc(n.make)} ${esc(n.model)}, owner ${esc(n.owner)}`);
+  if (n.alert) bits.push('<b style="color:#B3261E">Named in an alert</b>');
+  if (n.in_review) bits.push('<b style="color:#B8741A">Possible match waiting for review</b>');
+  d.innerHTML = bits.join('<br>'); return d;
+}
+function visEdge(e) {
+  const w = e.count ? 1 + Math.min(Math.log2(e.count + 1), 5) : e.amount ? 1 + Math.min(Math.log10(e.amount) - 3, 5) : 1.3;
+  const parts = [e.etype.replace(/_/g, ' ').toLowerCase()];
+  if (e.count) parts.push(`${e.count} calls`); if (e.amount) parts.push(rupees(e.amount));
+  if (e.first) parts.push(`${e.first.slice(0, 10)} to ${(e.last || '').slice(0, 10)}`);
+  return {id: e.id, from: e.from, to: e.to, raw: e, width: w, color: {color: SRC[e.source] || '#9AA0AA', opacity: .75},
+    arrows: ['CALLED', 'TRANSFERRED_TO'].includes(e.etype) ? {to: {enabled: true, scaleFactor: .5}} : undefined,
+    dashes: e.etype === 'SEEN_WITH' || e.etype === 'LIVES_IN', smooth: {type: 'continuous'},
+    title: parts.join(', ') + (e.source ? ` (source: ${e.source})` : ''), font: {size: 11, face: 'Mukta', strokeWidth: 3, color: '#4A5263'}};
+}
+function render(data, colourBy, opts = {}) {
+  nodesDS = new vis.DataSet(data.nodes.map(n => visNode(n, colourBy)));
+  edgesDS = new vis.DataSet(data.edges.map(visEdge));
+  const big = data.nodes.length > 250;
+  const options = {
+    physics: opts.hierarchical ? false : {solver: 'forceAtlas2Based', forceAtlas2Based: {gravitationalConstant: big ? -40 : -70, springLength: big ? 60 : 110, avoidOverlap: .4}, stabilization: {iterations: big ? 220 : 160}},
+    layout: opts.hierarchical ? {hierarchical: {enabled: true, direction: 'LR', levelSeparation: 125, nodeSpacing: 90}}
+                              : {hierarchical: {enabled: false}, improvedLayout: !big, randomSeed: 7},
+    interaction: {hover: true, tooltipDelay: 120, navigationButtons: false, keyboard: false, multiselect: false},
+    nodes: {borderWidthSelected: 4}, edges: {selectionWidth: 2},
+  };
+  if (!network) {
+    network = new vis.Network($('#net-canvas'), {nodes: nodesDS, edges: edgesDS}, options);
+    network.on('click', p => { if (p.nodes.length) nodeClicked(p.nodes[0]); });
+    network.on('doubleClick', p => { if (p.nodes.length) { const n = nodesDS.get(p.nodes[0]).raw; if (n.type === 'Person' || n.type !== 'Summary') focusOn(n.id, resolvedView); } });
+    network.on('stabilizationIterationsDone', () => network.setOptions({physics: {enabled: false}}));
+  } else {
+    network.setOptions(options);
+    network.setData({nodes: nodesDS, edges: edgesDS});
+    if (!opts.hierarchical) network.setOptions({physics: options.physics});
+  }
+  legend(colourBy, data);
+}
+function legend(colourBy, data) {
+  const types = [...new Set(data.nodes.map(n => n.type))].filter(t => t !== 'Summary');
+  const srcs = [...new Set(data.edges.map(e => e.source).filter(Boolean))];
+  $('#net-legend').innerHTML = (colourBy === 'community'
+    ? `<span><span class="sw" style="background:${COMM[0]}"></span>Colour = group</span><span>Size = influence</span>`
+    : types.map(t => `<span><span class="sw" style="background:${TYPE[t].color}"></span>${t}</span>`).join(''))
+    + srcs.map(s => `<span><span class="ln" style="background:${SRC[s]}"></span>${s === 'FUSED' ? 'Fused link' : s + ' link'}</span>`).join('')
+    + `<span><span class="sw" style="background:#fff;border:3px solid #B3261E"></span>In an alert</span>`
+    + `<span><span class="sw" style="background:#fff;border:3px solid #B8741A"></span>Possible match pending</span>`;
+}
+async function loadOverview(level) {
+  setMode(level);
+  const token = netMode;
+  $('#net-caption').innerHTML = '<span class="spin"></span> Building the network…';
+  try {
+    const d = await api('/graph/overview?level=' + level);
+    if (netMode !== token) return;                     // the analyst moved on while this loaded
+    if (!d.nodes.length) { $('#net-caption').textContent = 'No links yet. Run the analysis first.'; return; }
+    render(d, level === 'persons' ? 'community' : 'type');
+    const persons = d.nodes.filter(n => n.type === 'Person');
+    if (level === 'persons') {
+      peopleMap = {}; persons.forEach(p => peopleMap[p.label] = p.id);
+      $('#people').innerHTML = persons.map(p => `<option value="${esc(p.label)}">`).join('');
     }
-    
-    graphData.nodes.add(newNodes);
-    graphData.edges.add(newEdges);
-    
+    $('#net-caption').textContent = level === 'persons'
+      ? `${persons.length} suspects linked by calls, money, shared identifiers or joint FIRs, in ${d.communities} groups. ${d.victims_excluded} victim records are never shown.`
+      : `${num(d.nodes.length)} entities and ${num(d.edges.length)} links fused from FIR, CDR, bank and RTO data, out of ${num(d.totals.nodes)} in the full graph.`;
+  } catch (err) { $('#net-caption').textContent = 'Could not build the network: ' + err.message; }
+}
+async function focusOn(id, resolved = true) {
+  focusId = id; resolvedView = resolved; setMode('focus');
+  $$('#er-toggle button').forEach(b => b.classList.toggle('on', (b.dataset.res === 'true') === resolved));
+  $('#net-caption').innerHTML = '<span class="spin"></span> Loading…';
+  try {
+    const d = await api(`/graph/${encodeURIComponent(id)}?hops=2&resolved=${resolved}`);
+    render(d, 'type');
+    const c = d.nodes.find(n => n.id === d.center) || {};
+    const recs = d.nodes.filter(n => n.type === 'Person');
+    $('#net-caption').innerHTML = resolved
+      ? `<b>After resolution:</b> ${esc(c.label)} is one golden record built from ${(c.records || [1]).length} FIR record${(c.records || []).length === 1 ? '' : 's'}.`
+      : `<b>Before resolution:</b> ${recs.length} separate person records around ${esc(c.label)}, each from a different FIR.`;
+    network.once('stabilizationIterationsDone', () => network.fit({animation: !reduced}));
+    network.selectNodes([d.center]); nodeClicked(d.center);
+  } catch (err) { $('#net-caption').textContent = err.message; }
+}
+$('#btn-path').addEventListener('click', async () => {
+  const a = peopleMap[$('#path-a').value] || $('#path-a').value, b = peopleMap[$('#path-b').value] || $('#path-b').value;
+  if (!a || !b) { toast('Pick two people to connect'); return; }
+  const d = await api(`/graph/path?src=${encodeURIComponent(a)}&dst=${encodeURIComponent(b)}`).catch(err => ({found: false, error: err.message}));
+  if (!d.found) { toast(d.error || 'No chain of evidence connects these two'); return; }
+  setMode('path'); $$('#net-mode button').forEach(x => x.classList.remove('on'));
+  const byId = Object.fromEntries(d.nodes.map(n => [n.id, n]));
+  d.nodes.forEach(n => n.level = d.path.indexOf(n.id));
+  render(d, 'type', {hierarchical: true});
+  network.fit({animation: !reduced});
+  $('#net-caption').innerHTML = `<b>${d.hops} hops</b> connect ${esc(byId[d.path[0]].label)} to ${esc(byId[d.path.at(-1)].label)}`;
+  const steps = d.path.map((id, i) => {
+    const n = byId[id], nxt = d.path[i + 1];
+    const e = nxt && d.edges.find(x => (x.from === id && x.to === nxt) || (x.to === id && x.from === nxt));
+    return `<li><b>${esc(n.label)}</b> <span class="muted">${n.type}${n.owner ? ` of ${esc(n.owner)}` : ''}</span>${e ? `<div class="via">${esc(e.etype.replace(/_/g, ' ').toLowerCase())}${e.count ? `, ${e.count} calls` : ''}${e.amount ? ', ' + rupees(e.amount) : ''} (${e.source})</div>` : ''}</li>`;
+  }).join('');
+  $('#node-panel').innerHTML = `<h3>Chain of evidence</h3><ol class="hops" style="margin-top:8px">${steps}</ol>`;
+});
+
+async function nodeClicked(id) {
+  const vn = nodesDS.get(id); if (!vn) return;
+  const n = vn.raw;
+  if (n.type === 'Summary') {
+    nodesDS.remove(id);
+    nodesDS.add(n.children.map(c => visNode({...c.node, type: c.node.type}, 'type')));
+    edgesDS.add(n.children.map((c, i) => visEdge({...c.edge, id: `x-${id}-${i}`})));
+    network.setOptions({physics: {enabled: true}}); setTimeout(() => network.setOptions({physics: {enabled: false}}), 1500);
     return;
   }
-
-  const panel = document.getElementById('node-detail');
-  const rows = [
-    ['ID',    nodeId],
-    ['Type',  nodeData.group || '—'],
-    ['Label', nodeData.label || '—'],
-    ...(nodeData.title
-      ? nodeData.title
-          .replace(/<[^>]+>/g, '\n')
-          .split('\n')
-          .filter(l => l.includes(':'))
-          .map(l => { const [k,...v] = l.split(':'); return [k.trim(), v.join(':').trim()]; })
-      : []),
-  ];
-
-  panel.innerHTML = `
-    <h3>${escHtml(nodeData.label || nodeId)}</h3>
-    ${rows.map(([k,v]) => `
-      <div class="detail-row">
-        <div class="detail-label">${escHtml(k)}</div>
-        <div class="detail-value">${escHtml(v)}</div>
-      </div>
-    `).join('')}
-    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
-    <button class="btn btn-secondary btn-sm" onclick="loadGraph('${escHtml(nodeId)}')">
-      🔍 Expand subgraph
-    </button>
-  `;
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ④  ALERTS
-══════════════════════════════════════════════════════════════════ */
-async function loadAlerts() {
-  const container = document.getElementById('alerts-list');
-  container.innerHTML = '<div class="empty"><span class="spin"></span> Loading…</div>';
-  try {
-    const data = await api('/alerts');
-    if (!data.alerts.length) {
-      container.innerHTML = '<div class="empty"><div class="empty-icon">🔔</div>No alerts yet — run the pipeline first</div>';
-      return;
-    }
-
-    // Update badge
-    const badge = document.getElementById('alert-badge');
-    badge.textContent = data.count;
-    badge.classList.toggle('visible', data.count > 0);
-
-    container.innerHTML = data.alerts.map(a => {
-      const badgeClass = a.rule === 'SERIAL_OFFENDER_LINK' ? 'badge-serial' : 'badge-shared';
-      const conf = Math.round(a.confidence * 100);
-      return `<div class="alert-card" id="alert-${a.id}">
-        <div class="alert-header">
-          <span class="alert-badge ${badgeClass}">${a.rule.replace('_',' ')}</span>
-          <div>
-            <div class="alert-rule">${escHtml(a.rule)}</div>
-            <div class="alert-detail">${escHtml(a.rule === 'SERIAL_OFFENDER_LINK'
-              ? 'Cross-station activity detected'
-              : 'Shared device across multiple accounts')}</div>
-          </div>
-        </div>
-        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
-        <div class="alert-entities">
-          ${a.entities.map(e => `<span class="entity-chip">${escHtml(e)}</span>`).join('')}
-        </div>
-        <div class="alert-actions">
-          <button class="btn btn-secondary btn-sm" onclick="focusAlertGraph(${a.id}, ${JSON.stringify(a.entities)})">
-            🔗 View in Graph
-          </button>
-          <span class="verdict-btn v-tp" onclick="sendFeedback(${a.id},'tp',this)">TP</span>
-          <span class="verdict-btn v-fp" onclick="sendFeedback(${a.id},'fp',this)">FP</span>
-          <span class="verdict-btn v-tn" onclick="sendFeedback(${a.id},'tn',this)">TN</span>
-          <span class="verdict-btn v-fn" onclick="sendFeedback(${a.id},'fn',this)">FN</span>
-          <a href="${API}/export/${a.id}" target="_blank" class="btn btn-secondary btn-sm">⬇ Export</a>
-          <span class="conf-label">${conf}% confidence</span>
-        </div>
-      </div>`;
-    }).join('');
-
-  } catch(e) {
-    container.innerHTML = `<div class="empty">Error: ${escHtml(e.message)}</div>`;
+  const p = $('#node-panel');
+  p.innerHTML = `<h3>${esc(n.label)}</h3><p class="muted"><span class="spin"></span></p>`;
+  const d = await api('/node/' + encodeURIComponent(id)).catch(() => null);
+  if (!d) { p.innerHTML = `<h3>${esc(n.label)}</h3><p class="muted">${n.type}</p>`; return; }
+  const focusBtn = `<div class="row" style="margin-top:12px"><button class="btn small" onclick="focusOn('${esc(id)}', resolvedView)">Focus here</button></div>`;
+  if (d.kind === 'Person') {
+    const g = d.golden;
+    p.innerHTML = `<h3>${esc(g ? g.canonical : n.label)}</h3>
+      <div class="chips" style="margin:6px 0 10px">${n.role ? `<span class="tag">${n.role.toLowerCase()}</span>` : ''}${g ? `<span class="tag blue">golden record, ${g.n_records} FIR records</span>` : '<span class="tag">single record</span>'}${d.pending_review.length ? '<span class="tag" style="color:var(--amber)">possible match pending</span>' : ''}</div>
+      <table class="grid" style="font-size:13px"><thead><tr><th>As recorded</th><th>FIR</th></tr></thead><tbody>${d.records.map(r => `<tr><td>${nameHtml(r.name)}${r.alias ? ` <span class="muted">alias ${esc(r.alias)}</span>` : ''}</td><td>${esc(r.fir_id)}<div class="muted" style="font-size:12px">${esc(r.station)}, ${esc(r.date)}</div></td></tr>`).join('')}</tbody></table>
+      ${d.match_evidence.length ? `<h3 style="margin-top:12px;font-size:14px">Why these records were merged</h3>${factorsHtml(d.match_evidence[0].evidence.factors)}` : ''}
+      <h3 style="margin:12px 0 6px;font-size:14px">Timeline</h3><ul class="tl">${d.timeline.slice(0, 14).map(t => `<li class="${t.kind}"><b>${esc(t.ts.slice(0, 10))}</b> ${esc(t.text)}</li>`).join('')}</ul>${focusBtn}`;
+  } else if (d.kind === 'Phone') {
+    p.innerHTML = `<h3>${esc(n.label)}</h3><dl class="facts" style="margin-top:8px"><dt>Owner</dt><dd>${d.owners.map(o => nameHtml(o.name)).join(', ') || 'not in any FIR'}</dd>
+      <dt>Calls made</dt><dd>${d.calls.n} to ${d.calls.k} numbers</dd><dt>Active</dt><dd>${esc((d.calls.first || '').slice(0, 10))} to ${esc((d.calls.last || '').slice(0, 10))}</dd>
+      <dt>Towers</dt><dd>${d.towers.map(t => `${esc(t.tower_loc)} (${t.n})`).join(', ')}</dd><dt>Bank KYC on</dt><dd>${d.kyc_accounts.map(a => `${esc(a.account_no)} (${esc(a.holder_name)})`).join(', ') || 'none'}</dd></dl>${focusBtn}`;
+  } else if (d.kind === 'Account') {
+    p.innerHTML = `<h3>${esc(n.label)}</h3><dl class="facts" style="margin-top:8px"><dt>Holder</dt><dd>${esc(d.holder?.holder_name)}</dd><dt>KYC phone</dt><dd>${esc(d.holder?.linked_phone)}</dd>
+      ${d.summary.map(s => `<dt>${s.txn_type.toLowerCase()}</dt><dd>${s.n} txns, ${rupees(s.total)}</dd>`).join('')}
+      <dt>Money in from</dt><dd>${d.incoming.map(i => `${esc(i.from_acct)} (${rupees(i.total)})`).join(', ') || 'none'}</dd></dl>${focusBtn}`;
+  } else if (d.kind === 'Vehicle') {
+    p.innerHTML = `<h3>${esc(n.label)}</h3><dl class="facts" style="margin-top:8px">${d.rto ? `<dt>RTO owner</dt><dd>${esc(d.rto.owner_name)}</dd><dt>Vehicle</dt><dd>${esc(d.rto.colour)} ${esc(d.rto.make)} ${esc(d.rto.model)}</dd>` : ''}
+      <dt>Seen with</dt><dd>${d.seen_with.map(s => `${nameHtml(s.name)} (${esc(s.fir_id)})`).join(', ') || 'no FIR mention'}</dd></dl>${focusBtn}`;
+  } else if (d.kind === 'FIR') {
+    p.innerHTML = `<h3>${esc(d.fir.id)}</h3><p class="muted" style="font-size:13px">${esc(d.fir.station)}, ${esc(d.fir.date)}, ${esc(d.fir.section)}</p>
+      <p style="font-size:14px;margin:8px 0" lang="${DEVA.test(d.fir.narrative) ? 'hi' : 'en'}">${esc(d.fir.narrative)}</p>
+      <dl class="facts"><dt>Named</dt><dd>${d.persons.map(x => `${nameHtml(x.name)} (${x.role.toLowerCase()})`).join(', ')}</dd><dt>Victims</dt><dd>${d.victims_protected} protected, not shown</dd></dl>`;
+  } else {
+    p.innerHTML = `<h3>🔒 Protected identifier</h3><p class="muted" style="font-size:14px">${esc(d.note)}</p>`;
   }
 }
 
-async function sendFeedback(alertId, verdict, btn) {
-  // Highlight the selected verdict
-  btn.closest('.alert-actions').querySelectorAll('.verdict-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  try {
-    await api(`/alert/${alertId}/feedback`, {
-      method: 'POST',
-      body: JSON.stringify({ verdict, actor: 'analyst' }),
-    });
-    toast(`Feedback recorded: ${verdict.toUpperCase()}`);
-  } catch(e) {
-    toast('Feedback error: ' + e.message, 4000);
+/* ═══════════════ 5 Alerts ═══════════════ */
+const RULE = {SERIAL_OFFENDER: ['Serial offender', '#2B4AA0'], SHARED_DEVICE: ['Shared device', '#B8741A'], CIRCULAR_FLOW: ['Circular money flow', '#2D7A4E'],
+              CALL_BURST: ['Call burst', '#6F4C9B'], BROKER: ['Broker', '#B3261E']};
+const VERDICT = [['tp', 'Confirmed (TP)'], ['fp', 'False alarm (FP)'], ['tn', 'Correctly quiet (TN)'], ['fn', 'Missed (FN)']];
+loaders.alerts = async () => {
+  const [a, fb] = await Promise.all([api('/alerts'), api('/feedback/stats')]).catch(() => [{alerts: []}, {by_rule: {}}]);
+  $('#fb-stats').innerHTML = Object.entries(fb.by_rule).map(([r, s]) => `<span class="tag">${RULE[r]?.[0] || r}: ${s.tp} confirmed, ${s.fp} false${s.precision != null ? `, precision ${(s.precision * 100).toFixed(0)}%` : ''}</span>`).join('');
+  if (!a.alerts.length) { $('#alert-list').innerHTML = '<div class="empty">No alerts yet. Run the analysis first.</div>'; return; }
+  $('#alert-list').innerHTML = a.alerts.map(al => {
+    const [rname, rcol] = RULE[al.rule] || [al.rule, '#5B6478'];
+    return `<div class="alert"><div class="edge" style="background:${rcol}"></div><div>
+      <div class="row" style="justify-content:space-between"><div><span class="tag" style="color:${rcol};border-color:${rcol}40">${rname}</span></div>
+        <span class="conf">confidence <i><b style="width:${al.confidence * 100}%"></b></i> ${(al.confidence * 100).toFixed(0)}%</span></div>
+      <div class="title" style="margin-top:4px">${esc(al.title)}</div><div class="muted" style="font-size:14px">${esc(al.detail)}</div>
+      <ul>${al.evidence.map(ev => `<li>${nameHtml(ev)}</li>`).join('')}</ul>
+      <div class="chips" style="margin-bottom:10px">${al.entities.slice(0, 8).map(en => `<span class="tag chip-link" data-ent="${esc(en)}">${esc(en)}</span>`).join('')}</div>
+      <div class="row" style="gap:6px">${VERDICT.map(([v, l]) => `<button class="verdict ${al.verdict === v ? 'on' : ''}" data-alert="${al.id}" data-v="${v}">${l}</button>`).join('')}
+        <button class="btn small" style="margin-left:auto" data-export="${al.id}">Export evidence</button></div></div></div>`;
+  }).join('');
+};
+$('#alert-list').addEventListener('click', async e => {
+  const ent = e.target.closest('[data-ent]'), vb = e.target.closest('[data-v]'), ex = e.target.closest('[data-export]');
+  if (ent) { go('network'); focusOn(ent.dataset.ent, true); }
+  if (vb) {
+    try { const r = await api(`/alert/${vb.dataset.alert}/feedback`, {method: 'POST', body: JSON.stringify({verdict: vb.dataset.v})});
+      vb.parentElement.querySelectorAll('.verdict').forEach(x => x.classList.toggle('on', x === vb));
+      toast(`Verdict recorded and signed as entry #${r.ledger_id} in block ${r.block}`); refreshSeal();
+      const fb = await api('/feedback/stats'); $('#fb-stats').innerHTML = Object.entries(fb.by_rule).map(([r, s]) => `<span class="tag">${RULE[r]?.[0] || r}: ${s.tp} confirmed, ${s.fp} false${s.precision != null ? `, precision ${(s.precision * 100).toFixed(0)}%` : ''}</span>`).join('');
+    } catch (err) { toast('Could not record the verdict: ' + err.message); }
   }
+  if (ex) exportBundle(ex.dataset.export);
+});
+async function exportBundle(id) {
+  const r = await fetch('/export/' + id); const text = await r.text();       // keep the exact bytes: they are what was hashed
+  if (!r.ok) { toast('Export failed'); return; }
+  const b = JSON.parse(text), an = b.anchor;
+  const url = URL.createObjectURL(new Blob([text], {type: 'application/json'}));
+  $('#cert').innerHTML = `<div class="sheet" role="dialog" aria-label="Evidence certificate">
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">Certificate under Section 63(4), Bharatiya Sakshya Adhiniyam 2023</h2><span class="stampbox">Anchored</span></div>
+    <p style="margin:12px 0;color:var(--ink-2)">${esc(b.certificate)}</p>
+    <dl class="facts" style="grid-template-columns:170px 1fr;font-size:14px">
+      <dt>Alert</dt><dd>${esc(b.alert.title)}</dd><dt>Source records</dt><dd>${b.source_records.length} records from FIR, CDR and bank data</dd>
+      <dt>Exported</dt><dd>${esc(b.exported_at.replace('T', ' ').slice(0, 19))} UTC by ${esc(b.exported_by)}</dd>
+      <dt>Bundle SHA-256</dt><dd class="mono">${esc(b.bundle_sha256)}</dd>
+      <dt>Chain entry</dt><dd>#${an.seq} in block ${an.block_height}, endorsed by ${an.endorsed_by.map(n => NODE_LABEL[n]).join(', ')}</dd>
+      <dt>Block hash</dt><dd class="mono">${esc(an.block_hash)}</dd><dt>Merkle root</dt><dd class="mono">${esc(an.merkle_root)}</dd>
+      <dt>Merkle proof</dt><dd class="mono">${an.merkle_proof.length ? an.merkle_proof.map(s => `${s.side} ${short(s.hash)}`).join(', ') : 'single entry, leaf is the root'}</dd>
+      <dt>Signed by</dt><dd class="mono">${short(an.signer_pub)}… (analyst key)</dd></dl>
+    <p style="margin:16px 0 8px;font-size:14px">Anyone holding the bundle can check it without this server:</p>
+    <pre class="cli">python -m app.chain.verify --evidence evidence_alert_${id}.json</pre>
+    <div class="row" style="margin-top:18px;justify-content:flex-end"><a class="btn primary" href="${url}" download="evidence_alert_${id}.json">Download bundle</a><button class="btn" id="cert-close">Close</button></div></div>`;
+  $('#cert').classList.remove('hidden'); refreshSeal();
+  $('#cert-close').onclick = () => $('#cert').classList.add('hidden');
+}
+$('#cert').addEventListener('click', e => { if (e.target.id === 'cert') $('#cert').classList.add('hidden'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#cert').classList.add('hidden'); });
+
+/* ═══════════════ 6 Evidence chain ═══════════════ */
+let chainCopy = null, selectedBlock = null, blocksKey = '';
+loaders.chain = async () => { blocksKey = ''; await refreshSeal(); };
+async function renderChain(st) {
+  $('#nodes').innerHTML = st.nodes.map(n => `<div class="node ${n.state}"><div class="row" style="justify-content:space-between"><span class="who">${NODE_LABEL[n.node]}</span>
+      <span class="state">${{in_consensus: 'In consensus', tampered: 'Copy altered', out_of_sync: 'Out of sync'}[n.state]}</span></div>
+    <dl class="facts" style="margin-top:8px;grid-template-columns:96px 1fr"><dt>Height</dt><dd>block ${n.height}, ${n.entries} entries</dd>
+      <dt>Head</dt><dd class="mono">${short(n.head_hash)}</dd><dt>Node key</dt><dd class="mono">${n.key_fingerprint}</dd></dl>
+    ${n.errors.length ? `<ul class="errs">${n.errors.slice(0, 4).map(er => `<li>${esc(er)}</li>`).join('')}</ul>
+      <button class="btn small bad" style="margin-top:10px" data-heal="${n.node}">Re-sync from the other agencies</button>` : ''}</div>`).join('');
+  const c = st.consensus;
+  $('#consensus').innerHTML = c.quorum
+    ? `<b style="color:var(--seal)">${c.votes} of ${c.total} agencies hold the same chain</b> (head <span class="mono">${short(c.head_hash)}</span>). A block needs 2 of 3 endorsements to be committed.`
+    : `<b style="color:var(--stamp)">No quorum.</b> Agencies disagree; new blocks are refused until a copy is re-synced.`;
+  $('#copy-seg').innerHTML = st.nodes.map(n => `<button data-copy="${n.node}" class="${(chainCopy || 'police_hq') === n.node ? 'on' : ''}">${NODE_LABEL[n.node].split(' ').slice(-1)[0] === 'HQ' ? 'Police HQ' : NODE_LABEL[n.node].replace('State ', '').replace('District ', '')}</button>`).join('');
+  const bad = new Set(st.nodes.filter(n => (chainCopy || 'police_hq') === n.node).flatMap(n => n.bad_blocks));
+  const key = JSON.stringify([chainCopy, st.height, [...bad], st.nodes.map(n => n.head_hash)]);
+  if (key === blocksKey) return;
+  blocksKey = key;
+  const bl = await api('/chain/blocks?limit=60' + (chainCopy ? '&node=' + chainCopy : '')).catch(() => null);
+  if (!bl) return;
+  const list = bl.blocks.slice().reverse();
+  $('#blocks').innerHTML = list.map((b, i) => `${i ? `<div class="link ${bad.has(b.height) ? 'bad' : ''}" style="border-left-color:${bad.has(b.height) ? 'var(--stamp)' : 'var(--ink-3)'}"></div>` : ''}
+    <div class="blk ${bad.has(b.height) ? 'bad' : ''} ${selectedBlock === b.height ? 'on' : ''}" data-h="${b.height}">
+      <div class="row" style="justify-content:space-between"><span class="h">#${b.height}</span><span class="muted">${b.n_entries} ${b.n_entries === 1 ? 'entry' : 'entries'}</span></div>
+      <div class="acts">${b.actions.slice(0, 3).map(a => a.replace(/_/g, ' ').toLowerCase()).join(', ')}</div>
+      <div class="mono" title="block hash">${short(b.block_hash)}</div>
+      <div class="muted" style="font-size:11.5px">proposed by ${NODE_LABEL[b.proposer].replace('State ', '').replace('District ', '')}</div>
+      <div class="end" title="endorsements">${['police_hq', 'forensic_lab', 'court_registry'].map(nd => `<i class="${b.endorsed_by.includes(nd) ? 'on' : ''}" title="${NODE_LABEL[nd]}"></i>`).join('')}</div></div>`).join('');
+  const strip = $('#blocks'); strip.scrollLeft = strip.scrollWidth;
+  if (selectedBlock == null && list.length) showBlock(list.at(-1).height);
+  else if (selectedBlock != null) showBlock(selectedBlock);
+}
+$('#blocks').addEventListener('click', e => { const b = e.target.closest('.blk'); if (b) showBlock(+b.dataset.h); });
+$('#copy-seg').addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) { chainCopy = b.dataset.copy; blocksKey = ''; renderChain(lastChain); } });
+$('#nodes').addEventListener('click', async e => {
+  const b = e.target.closest('[data-heal]'); if (!b) return;
+  b.disabled = true; b.innerHTML = '<span class="spin"></span> Re-syncing';
+  try { const r = await api('/chain/heal/' + b.dataset.heal, {method: 'POST'});
+    toast(`${NODE_LABEL[r.node]} restored from ${NODE_LABEL[r.copied_from]}. The repair is itself logged in block ${r.logged_in_block}.`, 5000);
+    blocksKey = ''; await refreshSeal(); } catch (err) { toast('Re-sync failed: ' + err.message); b.disabled = false; }
+});
+async function showBlock(h) {
+  selectedBlock = h;
+  $$('.blk').forEach(x => x.classList.toggle('on', +x.dataset.h === h));
+  const d = await api(`/chain/block/${h}` + (chainCopy ? '?node=' + chainCopy : '')).catch(() => null);
+  if (!d) return;
+  const nodeRep = lastChain?.nodes.find(n => n.node === (chainCopy || 'police_hq'));
+  const badSeqs = new Set((nodeRep?.errors || []).map(er => (er.match(/^entry (\d+)/) || [])[1]).filter(Boolean).map(Number));
+  const B = d.block;
+  const summary = e => { const x = e.data; return x.name || x.title || x.file || (x.decision ? `${x.decision}: ${(x.names || []).join(' / ')}` : '') || (x.verdict ? `${x.verdict} on alert ${x.alert_id}` : '') || (x.bundle_sha256 ? `bundle ${short(x.bundle_sha256)}` : '') || (x.node ? `${x.node} restored from ${x.copied_from}` : '') || Object.keys(x).slice(0, 3).join(', '); };
+  $('#block-detail').innerHTML = `<div class="row" style="justify-content:space-between"><h2 style="margin:0">Block ${B.height}</h2><span class="muted" style="font-size:13px">copy held by ${NODE_LABEL[d.node]}</span></div>
+    <dl class="facts" style="grid-template-columns:150px 1fr;margin:10px 0;font-size:13.5px">
+      <dt>Block hash</dt><dd class="mono">${B.block_hash}</dd><dt>Previous block</dt><dd class="mono">${B.prev_block_hash}</dd>
+      <dt>Merkle root</dt><dd class="mono">${B.merkle_root}</dd><dt>Sealed</dt><dd>${esc(B.ts.replace('T', ' ').slice(0, 19))} UTC, proposed by ${NODE_LABEL[B.proposer]}</dd>
+      <dt>Endorsed by</dt><dd>${d.endorsements.map(e => `${esc(e.label)} <span class="mono muted">${short(e.signature)}</span>`).join(', ')}</dd></dl>
+    <h3>Merkle tree</h3><div class="merkle">${d.merkle_levels.slice().reverse().map(l => `<div class="lvl">${l.map(x => `<span>${x.slice(0, 8)}</span>`).join('')}</div>`).join('')}</div>
+    <h3 style="margin-top:10px">Signed entries</h3>
+    <table class="grid" style="font-size:13.5px"><thead><tr><th>#</th><th>Action</th><th>What</th><th>Signed by</th><th>Entry hash</th><th></th></tr></thead><tbody>
+    ${d.entries.map(e => `<tr style="${badSeqs.has(e.seq) ? 'background:var(--stamp-lt)' : ''}"><td>${e.seq}</td><td>${e.action.replace(/_/g, ' ').toLowerCase()}</td><td>${nameHtml(summary(e))}</td>
+      <td>${esc(e.actor)} <span class="mono muted">${e.signer_fp}</span></td><td class="mono">${short(e.row_hash)}</td>
+      <td>${badSeqs.has(e.seq) ? '<b style="color:var(--stamp)">fails check</b>' : '<span style="color:var(--seal)">verified</span>'}</td></tr>`).join('')}</tbody></table>`;
 }
 
-function focusAlertGraph(alertId, entities) {
-  // Find first Person or Phone node in entities
-  const target = entities.find(e => e.startsWith('P-')) ||
-                 entities.find(e => e.startsWith('PH:')) ||
-                 entities[0];
-  switchTab('graph');
-  loadGraph(target);
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ⑤  LEDGER
-══════════════════════════════════════════════════════════════════ */
-async function loadLedger() {
-  const tbody = document.getElementById('ledger-body');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spin"></span> Loading…</td></tr>';
-  try {
-    const data = await api('/ledger?limit=50');
-    if (!data.entries.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">No entries yet — run the pipeline</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.entries.map(e => `
-      <tr>
-        <td><strong>${e.id}</strong></td>
-        <td style="font-size:12px;color:var(--text-2)">${e.ts.replace('T',' ').slice(0,19)}</td>
-        <td>${escHtml(e.actor)}</td>
-        <td><span class="action-pill">${escHtml(e.action)}</span></td>
-        <td class="hash-cell">${escHtml((e.row_hash||'').slice(0,24))}…</td>
-      </tr>
-    `).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">Error: ${escHtml(e.message)}</td></tr>`;
+/* ═══════════════ Boot ═══════════════ */
+(async () => {
+  await Promise.all([refreshRail(), refreshSeal()]);
+  const s = await api('/stats').catch(() => null);
+  if (s?.last_run) {
+    $('#manifest-panel').classList.remove('hidden');
+    $('#manifest').innerHTML = `<tr><td colspan="4" class="muted">${num(s.counts.fir)} FIRs, ${num(s.counts.person)} people, ${num(s.counts.cdr)} calls, ${num(s.counts.bank_txn)} transactions and ${num(s.counts.vehicle_reg)} vehicles already loaded. Load again to see the file fingerprints.</td></tr>`;
+    $('#manifest-block').textContent = `Last run sealed in block ${s.last_run.block.height}`;
   }
-}
-
-async function verifyChain() {
-  const el = document.getElementById('verify-result');
-  el.style.display = 'none';
-  try {
-    const data = await api('/ledger/verify');
-    el.style.display = 'block';
-    if (data.intact) {
-      el.className = 'verify-ok';
-      el.textContent = '✓ Chain intact — no tampering detected';
-    } else {
-      el.className = 'verify-bad';
-      el.textContent = `✗ Chain broken at row ${data.first_broken_index} — tampering detected!`;
-    }
-  } catch(e) {
-    el.style.display = 'block';
-    el.className = 'verify-bad';
-    el.textContent = 'Verify error: ' + e.message;
-  }
-}
-
-async function tamperAndVerify() {
-  const btn = document.getElementById('btn-tamper');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Tampering…';
-  try {
-    // Fetch first ledger row id
-    const ledger = await api('/ledger?limit=100');
-    const entries = ledger.entries || [];
-    if (!entries.length) { toast('No ledger entries to tamper'); return; }
-    const firstId = Math.min(...entries.map(e => e.id));
-
-    await api('/demo/tamper', {
-      method: 'POST',
-      body: JSON.stringify({ row_id: firstId }),
-    });
-    toast(`Row ${firstId} corrupted — running verify…`, 2000);
-    await sleep(800);
-    await loadLedger();
-    await verifyChain();
-
-    // Highlight tampered rows
-    const tbody = document.getElementById('ledger-body');
-    const rows = tbody.querySelectorAll('tr');
-    rows.forEach(tr => {
-      const idCell = tr.querySelector('td:first-child');
-      if (idCell && parseInt(idCell.textContent) === firstId) {
-        tr.classList.add('tampered');
-      }
-    });
-
-  } catch(e) {
-    toast('Tamper error: ' + e.message, 4000);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '⚠ Demo Tamper';
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════════════════════════════ */
-function escHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
+})();
 </script>
 </body>
 </html>

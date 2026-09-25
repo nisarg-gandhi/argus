@@ -11,6 +11,8 @@ import sqlite3
 from fastapi import APIRouter, Query
 from rapidfuzz import fuzz
 
+from app.er.normalise import display_name
+
 router = APIRouter(tags=["entities"])
 
 _DB = pathlib.Path(__file__).resolve().parent.parent.parent / "argus.db"
@@ -29,16 +31,19 @@ def search_entities(q: str = Query(..., min_length=1, description="Search term")
 
     try:
         # Persons
-        for r in conn.execute("SELECT id, name, role, phone, address, fir_id FROM person"):
+        for r in conn.execute("SELECT id, name, alias, role, phone, address, fir_id FROM person "
+                              "WHERE role != 'VICTIM'"):      # victims are never searchable
             score = max(
                 fuzz.partial_ratio(term, (r["name"] or "").lower()),
+                fuzz.partial_ratio(term, display_name(r["name"] or "").lower()),
+                fuzz.partial_ratio(term, (r["alias"] or "").lower()),
                 fuzz.partial_ratio(term, (r["phone"] or "").lower()),
                 fuzz.partial_ratio(term, (r["address"] or "").lower()),
             )
             if score >= 60:
                 results.append({
                     "type": "Person", "id": r["id"],
-                    "label": r["name"], "role": r["role"],
+                    "label": r["name"], "role": r["role"], "latin": display_name(r["name"]),
                     "phone": r["phone"], "fir_id": r["fir_id"],
                     "relevance": score,
                 })
